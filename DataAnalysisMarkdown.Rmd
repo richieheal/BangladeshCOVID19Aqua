@@ -7,24 +7,359 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
+#######################################################################
+# Load in the data
+#######################################################################
+DataFile <- "COVIDAquaculture_Data_RawDATA.csv"
+RawData <- read.csv(DataFile, header = TRUE, skip = 2)
+
 ```
 
-## R Markdown
+## Analysis of Aquaculture in Bangladesh Pre and Post COVID 19
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+This document details the analysis of farm survey data taken pre and post COVID 19.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+```{r Effect on Labour BASIC STATS, include=FALSE}
 
-```{r cars}
-summary(cars)
+#############################################################
+#
+# Analysis on the effect of COVID on labour for the farms
+#
+# Here the number of workers and the cost of labour for 
+# permanent, seasonal and non-technical staff
+#
+# 
+#############################################################
+# Overall figures
+#############################################################
+library(data.table)
+RawData <- setDT(RawData)
+RawData[, TotLab_1 := (PermLab_1 + SeasLab_1 + NonAqLab_1)]
+RawData[, TotLab_2 := (PermLab_2 + SeasLab_2 + NonAqLab_2)]
+RawData[, DiffLab := (TotLab_2 - TotLab_1)]
+RawData[, DiffPerm := (PermLab_2 - PermLab_1)]
+RawData[, DiffSeas := (SeasLab_2 - SeasLab_1)]
+RawData[, DiffNonAq := (NonAqLab_2 - NonAqLab_1)]
+Farms_MoreStaff <- sum(RawData$DiffLab > 0)
+Farms_LessStaff <- sum(RawData$DiffLab < 0)
+Farms_SameStaff <- sum(RawData$DiffLab == 0)
+
+Mean_StaffChange <- mean(RawData$DiffLab, na.rm = TRUE)
+Median_StaffChange <- median(RawData$DiffLab, na.rm = TRUE)
+
+Total_Perm_1 <- sum(RawData$PermLab_1)
+Total_Seas_1 <- sum(RawData$SeasLab_1)
+Total_NonAq_1 <- sum(RawData$NonAqLab_1)
+Total_Perm_2 <- sum(RawData$PermLab_2)
+Total_Seas_2 <- sum(RawData$SeasLab_2)
+Total_NonAq_2 <- sum(RawData$NonAqLab_2)
+
+
+```
+  
+### Effect on labour - employee numbers
+  
+The overall effect on the labour numbers:
+
+  Farms with more staff: **`r Farms_MoreStaff`**  
+  Farms with less staff: **`r Farms_LessStaff`**  
+  Farms with the same number of staff employed: **`r Farms_SameStaff`**  
+
+So most farms reported a decrease in employee numbers.  The mean change in employee number was **`r Mean_StaffChange`** and the median change was **`r Median_StaffChange`**.
+
+Before COVID19 the farms employed **`r Total_Perm_1`** permanent staff, **`r Total_Seas_1`** seasonal staff and **`r Total_NonAq_1`** non-technical staff.
+
+After COVID19 the farms employed **`r Total_Perm_2`** permanent staff, **`r Total_Seas_2`** seasonal staff and **`r Total_NonAq_2`** non-technical staff.  
+  
+  Difference in permanent staff numbers: **`r Total_Perm_2 - Total_Perm_1`**  
+  Difference in seasonal staff numbers: **`r Total_Seas_2 - Total_Seas_1`**  
+  Difference in non-technical staff numbers: **`r Total_NonAq_2 - Total_NonAq_1`**  
+  
+The effect was appears to be a reduction in permanent and non-technical staff numbers with seasonal numbers remaining consistent. However, it is a little more complicated than that.  
+
+For example, of all the farms **`r sum(RawData$DiffPerm < 0)`** reduced permanent staff, **`r sum(RawData$DiffPerm > 0)`** increased permanent staff and **`r sum(RawData$DiffPerm == 0)`** kept the same number of permanent staff. 
+
+INPUT THE RANGE OF VALUES.
+
+Those farms that reduced permanent staff did so by a mean of **`r mean(RawData$DiffPerm[which(RawData$DiffPerm < 0)])`** employees with a median of **`r median(RawData$DiffPerm[which(RawData$DiffPerm < 0)])`**. Those farms that increased permanent staff did so by a mean of **`r mean(RawData$DiffPerm[which(RawData$DiffPerm > 0)])`** employees with a median of **`r median(RawData$DiffPerm[which(RawData$DiffPerm > 0)])`**.
+
+For seasonal staff, of all the farms **`r sum(RawData$DiffSeas < 0)`** reduced seasonal staff, **`r sum(RawData$DiffSeas > 0)`** increased seasonal staff and **`r sum(RawData$DiffSeas == 0)`** kept the same number of seasonal staff.
+
+Those farms that reduced seasonal staff did so by a mean of **`r mean(RawData$DiffSeas[which(RawData$DiffSeas < 0)])`** employees with a median of **`r median(RawData$DiffSeas[which(RawData$DiffSeas < 0)])`**. Those farms that increased seasonal staff did so by a mean of **`r mean(RawData$DiffSeas[which(RawData$DiffSeas > 0)])`** employees with a median of **`r median(RawData$DiffSeas[which(RawData$DiffSeas > 0)])`**.
+
+For non-technical staff, of all the farms **`r sum(RawData$DiffNonAq < 0)`** reduced non-technical staff, **`r sum(RawData$DiffNonAq > 0)`** increased non-technical staff and **`r sum(RawData$DiffNonAq == 0)`** kept the same number of non-technical staff.
+
+Those farms that reduced non-technical staff did so by a mean of **`r mean(RawData$DiffNonAq[which(RawData$DiffNonAq < 0)])`** employees with a median of **`r median(RawData$DiffNonAq[which(RawData$DiffNonAq < 0)])`**. Those farms that increased non-technical staff did so by a mean of **`r mean(RawData$DiffNonAq[which(RawData$DiffNonAq > 0)])`** employees with a median of **`r median(RawData$DiffNonAq[which(RawData$DiffNonAq > 0)])`**.
+
+The trend in seasonal staff was either a reduction or increase by a single employee, or no change occurring. Of those **`r sum(RawData$DiffSeas > 0)`** farms increasing the seasonal staff, **`r sum(RawData$DiffPerm[which(RawData$DiffSeas > 0)] < 0)`** farms had decreased their permanent staff, **`r sum(RawData$DiffNonAq[which(RawData$DiffSeas > 0)] < 0)`** farms had decreased their non-technical staff, and **`r sum(RawData$DiffNonAq[which(RawData$DiffSeas > 0)]< 0 & RawData$DiffPerm[which(RawData$DiffSeas > 0)] < 0)`** reduced both permanent and non-technical staff. **`r sum(RawData$DiffPerm[which(RawData$DiffSeas > 0)] == 0)`** farms kept the same number of permanent staff, and  **`r sum(RawData$DiffNonAq[which(RawData$DiffSeas > 0)] == 0)`** kept the same number of non-technical staff, and **`r sum(RawData$DiffNonAq[which(RawData$DiffSeas > 0)] == 0 & RawData$DiffPerm[which(RawData$DiffSeas > 0)] == 0)`** kept the same number of permanent **and** non-technical staff, whilst increasing seasonal employees.  
+
+```{r Effect on Labour COSTS BASIC STATS, include=FALSE}
+#########################################################
+#
+# Here some basic figures on the cost of labour changes
+#
+#########################################################
+MeanPermCost_1 <- mean(RawData$PermLabCOST_1, na.rm = TRUE)
+MeanPermCost_2 <- mean(RawData$PermLabCOST_2, na.rm = TRUE)
+MeanSeasCost_1 <- mean(RawData$SeasLabCOST_1, na.rm = TRUE)
+MeanSeasCost_2 <- mean(RawData$SeasLabCOST_2, na.rm = TRUE)
+MeanNonAqCost_1 <- mean(RawData$NonAqLabCOST_1, na.rm = TRUE)
+MeanNonAqCost_2 <- mean(RawData$NonAqLabCOST_2, na.rm = TRUE)
+
+Mean_Total_1 <- mean(MeanPermCost_1, MeanSeasCost_1, MeanNonAqCost_1)
+Mean_Total_2 <- mean(MeanPermCost_2, MeanSeasCost_2, MeanNonAqCost_2)
+
+############################################################
+# Paired t-tests
+############################################################
+Perm_Cost_TTest <- t.test(RawData$PermLabCOST_2,
+                          RawData$PermLabCOST_1,
+                          alternative = "less",
+                          paired = TRUE,
+                          na.action = na.omit)
+
+Seas_Cost_TTest <- t.test(RawData$SeasLabCOST_2,
+                          RawData$SeasLabCOST_1,
+                          alternative = "less",
+                          paired = TRUE,
+                          na.action = na.omit)
+
+NonAq_Cost_TTest <- t.test(RawData$NonAqLabCOST_2,
+                          RawData$NonAqLabCOST_1,
+                          alternative = "less",
+                          paired = TRUE,
+                          na.action = na.omit)
 ```
 
-## Including Plots
+### Effect on labour - costs of employment per day
+  
+The overall effect on the labour costs:
 
-You can also embed plots, for example:
+The mean labour cost pre-COVID was **`r Mean_Total_1`** and was **`r Mean_Total_2`** post-COVID suggesting a small decrease in labour cost due to COVID. For each of the employment types the means were:  
+  
+  Pre-covid Permanent Labour cost mean: **`r MeanPermCost_1`**  
+  Post-covid Permanent Labour cost mean: **`r MeanPermCost_2`**  
+  
+  Pre-covid Seasonal Labour cost mean: **`r MeanSeasCost_1`**  
+  Post-covid Seasonal Labour cost mean: **`r MeanSeasCost_2`**  
+  
+  Pre-covid Non-technical Labour cost mean: **`r MeanNonAqCost_1`**  
+  Post-covid Non-technical Labour cost mean: **`r MeanNonAqCost_2`**  
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+Therefore, there has been reduction in all employment sector costs due to COVID. These values are the costs per employee and therefore this suggests a decrease in the wages for sector employees.
+
+Assuming the costs are normally distributed (which is a fair assumption to make) we can check whether there is a statistical difference between the costs per employee. This will be a pairwise test using farms with before and after data.
+
+#### T-test for Labour Costs
+
+To test whether there was a significant difference in the costs per employee pre and post COVID 19 a one-tailed paired t-test was performed on the data.
+
+For permanent employee costs:  
+        P-value: **`r Perm_Cost_TTest$p.value`**  
+        Test Statistic: **`r Perm_Cost_TTest$statistic`**  
+        Degrees of Freedom: **`r Perm_Cost_TTest$parameter`**  
+        Estimated difference in means: **`r Perm_Cost_TTest$estimate`**  
+          
+For seasonal employee costs:    
+        P-value: **`r Seas_Cost_TTest$p.value`**  
+        Test Statistic: **`r Seas_Cost_TTest$statistic`**  
+        Degrees of Freedom: **`r Seas_Cost_TTest$parameter`**  
+        Estimated difference in means: **`r Seas_Cost_TTest$estimate`**  
+          
+For non-technical employee costs:    
+        P-value: **`r NonAq_Cost_TTest$p.value`**  
+        Test Statistic: **`r NonAq_Cost_TTest$statistic`**  
+        Degrees of Freedom: **`r NonAq_Cost_TTest$parameter`**  
+        Estimated difference in means: **`r NonAq_Cost_TTest$estimate`**  
+
+The results suggest a significant decrease in the costs of labour for seasonal and non-technical employees with a decrease of 0.5USD per day (**`r Seas_Cost_TTest$estimate`** for seasonal staff and **`r NonAq_Cost_TTest$estimate`** for non-technical staff). There was no significant difference in the costs for permanent staff.  
+
+```{r Effect on Labour SCATTER PLOTS, include=FALSE}
+##############################################################
+#Going to produce scatter plots pre and post covid
+###############################################################
+library(plotly)
+Offset = 0.1
+MaxX = 6 + Offset
+MaxY = 6+ Offset
+MinX = -Offset
+MinY = -Offset
+SymbolSize = 7
+
+# Set axis titles
+x1 <- list(title = list(text = "Employee Number Pre-COVID19"), 
+                      range = c(MinX,MaxX))
+y1 <- list(title = list(text = "Employee Number Post-COVID19"),
+                      range = c(MinY,MaxY))
+
+PermWorkersPerFarmPlot <- plot_ly(data = RawData, type = 'scatter', mode = 'markers+line') %>%
+  add_trace(name = 'NoChangeLine',
+            mode = 'line',
+            fill = 'tozeroy', fillcolor = 'rgba(240,240,240, 0.8)',
+            showlegend = FALSE,
+            line = list(color = 'rgb(200,200,200)', width = 0.5, dash = '5px'),
+            x = c(0,MaxX),
+            y = c(0,MaxY)) %>%
+  add_trace(mode = 'markers',
+            marker = list(color = 'rgb(0,0,0)', size = SymbolSize, symbol = 'triangle-up'),
+            name = 'Permanent Labour Numbers',
+            x = ~jitter(PermLab_1, amount = 0),
+            y = ~jitter(PermLab_2, amount = 0)) %>%
+  layout(showlegend = FALSE,
+         xaxis = list(title = list(text = "Permanent Employee Number Pre-COVID19"), 
+                      range = c(MinX,MaxX)),
+         yaxis = y1)
+SeasWorkersPerFarmPlot <- plot_ly(data = RawData, type = 'scatter', mode = 'markers+line') %>%
+  add_trace(name = 'NoChangeLine',
+            mode = 'line',
+            fill = 'tozeroy', fillcolor = 'rgba(240,240,240, 0.8)',
+            showlegend = FALSE,
+            line = list(color = 'rgb(200,200,200)', width = 0.5, dash = '5px'),
+            x = c(0,MaxX),
+            y = c(0,MaxY)) %>%
+  add_trace(mode = 'markers',
+            marker = list(color = 'rgb(0,0,0)', size = SymbolSize, symbol = 'triangle-down'),
+            name = 'Seasonal Labour',
+            x = ~jitter(SeasLab_1, amount = 0),
+            y = ~jitter(SeasLab_2, amount = 0)) %>%
+  layout(showlegend = FALSE,
+         xaxis = list(title = list(text = "Seasonal Employee Number Pre-COVID19"), 
+                      range = c(MinX,MaxX)),
+         yaxis = y1)
+NonAqWorkersPerFarmPlot <- plot_ly(data = RawData, type = 'scatter', mode = 'markers+line') %>%
+  add_trace(name = 'NoChangeLine',
+            mode = 'line',
+            fill = 'tozeroy', fillcolor = 'rgba(240,240,240, 0.8)',
+            showlegend = FALSE,
+            line = list(color = 'rgb(200,200,200)', width = 0.5, dash = '5px'),
+            x = c(0,MaxX),
+            y = c(0,MaxY)) %>%
+  add_trace(mode = 'markers',
+            marker = list(color = 'rgb(0,0,0)', size = SymbolSize, symbol = 'circle'),
+            name = 'Non-specialist Labour',
+            x = ~jitter(NonAqLab_1, amount = 0),
+            y = ~jitter(NonAqLab_2, amount = 0)) %>%
+  layout(showlegend = FALSE,
+         xaxis = list(title = list(text = "Non-technical Employee Number Pre-COVID19"), 
+                      range = c(MinX,MaxX)),
+         yaxis = y1)
+WorkersPerFarmPlot <- subplot(PermWorkersPerFarmPlot,
+                              SeasWorkersPerFarmPlot,
+                              NonAqWorkersPerFarmPlot,
+                              nrows = 1,
+                              shareY = TRUE,
+                              shareX = TRUE,
+                              titleX = TRUE,
+                              titleY = TRUE)
+
+####################################################################################
+#
+# Repeat for costs
+#
+#####################################################################################
+Offset = 0.1
+MaxX = 6 + Offset
+MaxY = 6+ Offset
+MinX = 2 - Offset
+MinY = 2 - Offset
+SymbolSize = 7
+
+# Set axis titles
+x1 <- list(title = list(text = "Labour Cost Pre-COVID19 (USD)"), 
+                      range = c(MinX,MaxX))
+y1 <- list(title = list(text = "Labour Cost Post-COVID19"),
+                      range = c(MinY,MaxY),
+           showline = T)
+
+PermWorkersCOSTPerFarmPlot <- plot_ly(data = RawData, type = 'scatter', mode = 'markers+line') %>%
+  add_trace(name = 'NoChangeLine',
+            mode = 'line',
+            fill = 'tozeroy', fillcolor = 'rgba(240,240,240, 0.8)',
+            showlegend = FALSE,
+            line = list(color = 'rgb(200,200,200)', width = 0.5, dash = '5px'),
+            x = c(0,MaxX),
+            y = c(0,MaxY)) %>%
+  add_trace(mode = 'markers',
+            marker = list(color = 'rgb(0,0,0)', size = SymbolSize, symbol = 'triangle-up-open'),
+            name = 'Permanent Labour Numbers',
+            x = ~jitter(PermLabCOST_1, amount = 0),
+            y = ~jitter(PermLabCOST_2, amount = 0)) %>%
+  layout(showlegend = FALSE,
+         yaxis = y1,
+         xaxis = list(title = list(text = "Permanent Labour Cost Pre-COVID19 (USD)"),
+                      range = c(MinY,MaxY),
+                      showline = T))
+SeasWorkersCOSTPerFarmPlot <- plot_ly(data = RawData, type = 'scatter', mode = 'markers+line') %>%
+  add_trace(name = 'NoChangeLine',
+            mode = 'line',
+            fill = 'tozeroy', fillcolor = 'rgba(240,240,240, 0.8)',
+            showlegend = FALSE,
+            line = list(color = 'rgb(200,200,200)', width = 0.5, dash = '5px'),
+            x = c(0,MaxX),
+            y = c(0,MaxY)) %>%
+  add_trace(mode = 'markers',
+            marker = list(color = 'rgb(0,0,0)', size = SymbolSize, symbol = 'triangle-down-open'),
+            name = 'Seasonal Labour',
+            x = ~jitter(SeasLabCOST_1, amount = 0),
+            y = ~jitter(SeasLabCOST_2, amount = 0)) %>%
+  layout(showlegend = FALSE,
+         yaxis = y1,
+         xaxis = list(title = list(text = "Seasonal Labour Cost Pre-COVID19 (USD)"),
+                      range = c(MinY,MaxY),
+                      showline = T))
+NonAqWorkersCOSTPerFarmPlot <- plot_ly(data = RawData, type = 'scatter', mode = 'markers+line') %>%
+  add_trace(name = 'NoChangeLine',
+            mode = 'line',
+            fill = 'tozeroy', fillcolor = 'rgba(240,240,240, 0.8)',
+            showlegend = FALSE,
+            line = list(color = 'rgb(200,200,200)', width = 0.5, dash = '5px'),
+            x = c(0,MaxX),
+            y = c(0,MaxY)) %>%
+  add_trace(mode = 'markers',
+            marker = list(color = 'rgb(0,0,0)', size = SymbolSize, symbol = 'circle-open'),
+            name = 'Non-specialist Labour',
+            x = ~jitter(NonAqLabCOST_1, amount = 0),
+            y = ~jitter(NonAqLabCOST_2, amount = 0)) %>%
+  layout(showlegend = FALSE,
+         yaxis = y1,
+         xaxis = list(title = list(text = "Non-technical Labour Cost Pre-COVID19 (USD)"),
+                      range = c(MinY,MaxY),
+                      showline = T))
+WorkersCOSTPerFarmPlot <- subplot(PermWorkersCOSTPerFarmPlot,
+                              SeasWorkersCOSTPerFarmPlot,
+                              NonAqWorkersCOSTPerFarmPlot,
+                              nrows = 1,
+                              shareY = TRUE,
+                              shareX = TRUE,
+                              titleX = TRUE,
+                              titleY = TRUE)
+
+WorkSubplot <- subplot(WorkersPerFarmPlot,
+                       WorkersCOSTPerFarmPlot,
+                       nrows = 2,
+                       margin = 0.1,
+                       titleX = TRUE,
+                       titleY = TRUE)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+### Scatter plots to show the effect
+
+Here the effect of COVID19 is explored on the labour used to run the farms.
+
+`r WorkersPerFarmPlot`
+
+`r WorkersCOSTPerFarmPlot`
+
+And, combined into a subplot
+
+`r WorkSubplot`
+
+### Summary
+
+These results suggest:
+
+ 1. There are fewer permanent employees post-COVID 19 working on farms but the cost of their labour remains the same
+ 2. There are similar numbers of seasonal workers on farms post-COVID 19 and the cost of their labour is significantly reduced
+ 3. There are fewer non-technical staff on farms and their cost of labour is significantly less
+ 4. There is evidence to suggest some farms have reduced permanent and non-technical staff and replaced them with a single seasonal worker
