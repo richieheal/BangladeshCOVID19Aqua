@@ -14,6 +14,12 @@ knitr::opts_chunk$set(echo = TRUE)
 DataFile <- "COVIDAquaculture_Data_RawDATA.csv"
 RawData <- read.csv(DataFile, header = TRUE, skip = 2, stringsAsFactors = TRUE)
 
+##########################################
+# Load in the consumer data
+##########################################
+ConsumerDataFile <- "COVIDAquaculture_ConsumerData.csv"
+ConsumerData <- read.csv(ConsumerDataFile, header = TRUE, skip = 2, stringsAsFactors = TRUE)
+
 ```
 
 ## Analysis of Aquaculture in Bangladesh Pre and Post COVID 19
@@ -647,6 +653,14 @@ MeanGate_Carp_2 <- mean(RawData$GatePRICE_Carp_2, na.rm = TRUE)
 MeanGate_OtherCat_1 <- mean(RawData$GatePRICE_OtherCat_1, na.rm = TRUE)
 MeanGate_OtherCat_2 <- mean(RawData$GatePRICE_OtherCat_2, na.rm = TRUE)
 
+StdGate_Pang_1 <- sd(RawData$GatePRICE_Pang_1, na.rm = TRUE)
+StdGate_Pang_2 <- sd(RawData$GatePRICE_Pang_2, na.rm = TRUE)
+StdGate_Tila_1 <- sd(RawData$GatePRICE_Tila_1, na.rm = TRUE)
+StdGate_Tila_2 <- sd(RawData$GatePRICE_Tila_2, na.rm = TRUE)
+StdGate_Carp_1 <- sd(RawData$GatePRICE_Carp_1, na.rm = TRUE)
+StdGate_Carp_2 <- sd(RawData$GatePRICE_Carp_2, na.rm = TRUE)
+StdGate_OtherCat_1 <- sd(RawData$GatePRICE_OtherCat_1, na.rm = TRUE)
+StdGate_OtherCat_2 <- sd(RawData$GatePRICE_OtherCat_2, na.rm = TRUE)
 
 
 ```
@@ -656,22 +670,676 @@ MeanGate_OtherCat_2 <- mean(RawData$GatePRICE_OtherCat_2, na.rm = TRUE)
 
 Prior to covid19 the mean gate prices for fish were:  
   
- Pangasius: **`r MeanGate_Pang_1`**  
- Tilapia: **`r MeanGate_Tila_1`**  
- Carp: **`r MeanGate_Carp_1`**  
- Other catfish: **`r MeanGate_OtherCat_1`**
+ Pangasius: **`r MeanGate_Pang_1`** +/- **`r StdGate_Pang_1`**  
+ Tilapia: **`r MeanGate_Tila_1`** +/- **`r StdGate_Tila_1`**  
+ Carp: **`r MeanGate_Carp_1`** +/- **`r StdGate_Carp_1`**  
+ Other catfish: **`r MeanGate_OtherCat_1`** +/- **`r StdGate_OtherCat_1`**
  
 After covid19 the mean gate prices for fish were:  
   
- Pangasius: **`r MeanGate_Pang_2`**  
- Tilapia: **`r MeanGate_Tila_2`**  
- Carp: **`r MeanGate_Carp_2`**  
- Other catfish: **`r MeanGate_OtherCat_2`**
+ Pangasius: **`r MeanGate_Pang_2`** +/- **`r StdGate_Pang_2`**  
+ Tilapia: **`r MeanGate_Tila_2`** +/- **`r StdGate_Tila_2`**  
+ Carp: **`r MeanGate_Carp_2`** +/- **`r StdGate_Carp_2`**  
+ Other catfish: **`r MeanGate_OtherCat_2`** +/- **`r StdGate_OtherCat_2`**
  
-The percentage decrease in prices were:  
+The percentage increase in prices were:  
   Pangasius: **`r (MeanGate_Pang_2 - MeanGate_Pang_1) / MeanGate_Pang_2 * 100`**  
   Tilapia: **`r (MeanGate_Tila_2 - MeanGate_Tila_1) / MeanGate_Tila_2 * 100`**  
   Carp: **`r (MeanGate_Carp_2 - MeanGate_Carp_1) / MeanGate_Carp_2 * 100`**  
   Other catfish: **`r (MeanGate_OtherCat_2 - MeanGate_OtherCat_1) / MeanGate_OtherCat_2 * 100`** 
   
+
+  
+```{r Effect on GATE PRICES BASIC STATS, include=FALSE}
+
+############################################################
+# Paired t-tests
+############################################################
+Pang_GATE_TTest <- t.test(RawData$GatePRICE_Pang_2,
+                          RawData$GatePRICE_Pang_1,
+                          alternative = "less",
+                          paired = TRUE,
+                          na.action = na.omit,
+                          var.equal = TRUE)
+Tila_GATE_TTest <- t.test(RawData$GatePRICE_Tila_2,
+                          RawData$GatePRICE_Tila_1,
+                          alternative = "less",
+                          paired = TRUE,
+                          na.action = na.omit,
+                          var.equal = TRUE)
+Carp_GATE_TTest <- t.test(RawData$GatePRICE_Carp_2,
+                          RawData$GatePRICE_Carp_1,
+                          alternative = "less",
+                          paired = TRUE,
+                          na.action = na.omit,
+                          var.equal = TRUE)
+OtherCat_GATE_TTest <- t.test(RawData$GatePRICE_OtherCat_2,
+                          RawData$GatePRICE_OtherCat_1,
+                          alternative = "less",
+                          paired = TRUE,
+                          na.action = na.omit,
+                          var.equal = TRUE)
+
+#####################################################
+# Farms for each finfish
+#####################################################
+Number_PangFARMS <- sum(!is.na(RawData$GatePRICE_Pang_1) & !is.na(RawData$GatePRICE_Pang_2)) 
+Number_TilaFARMS <- sum(!is.na(RawData$GatePRICE_Tila_1) & !is.na(RawData$GatePRICE_Tila_2)) 
+Number_CarpFARMS <- sum(!is.na(RawData$GatePRICE_Carp_1) & !is.na(RawData$GatePRICE_Carp_2)) 
+Number_OtherCatFARMS <- sum(!is.na(RawData$GatePRICE_OtherCat_1) & !is.na(RawData$GatePRICE_OtherCat_2)) 
+
+```
+### Number of farms
+
+There were **`r Number_PangFARMS`** pangasius farms with pre & post-COVID gate prices, **`r Number_TilaFARMS`** tilapia farms with pre & post-COVID gate prices, **`r Number_CarpFARMS`** carp farms with pre & post-COVID gate prices and **`r Number_OtherCatFARMS`** other catfish farms with pre & post-COVID gate prices.
+
+
+### Significance of changes to gate prices
+
+To test if the decrease was statistically significant a pairwise Student's T-test was performed on the data with a single-tail (decrease).
+
+For pangasius gate prices:  
+        P-value: **`r Pang_GATE_TTest$p.value`**  
+        Test Statistic: **`r Pang_GATE_TTest$statistic`**  
+        Degrees of Freedom: **`r Pang_GATE_TTest$parameter`**  
+        Estimated difference in means: **`r Pang_GATE_TTest$estimate`**  
+
+For tilapia gate prices:  
+        P-value: **`r Tila_GATE_TTest$p.value`**  
+        Test Statistic: **`r Tila_GATE_TTest$statistic`**  
+        Degrees of Freedom: **`r Tila_GATE_TTest$parameter`**  
+        Estimated difference in means: **`r Tila_GATE_TTest$estimate`**  
+        
+For carp gate prices:  
+        P-value: **`r Carp_GATE_TTest$p.value`**  
+        Test Statistic: **`r Carp_GATE_TTest$statistic`**  
+        Degrees of Freedom: **`r Carp_GATE_TTest$parameter`**  
+        Estimated difference in means: **`r Carp_GATE_TTest$estimate`**  
+        
+For other catfish gate prices:  
+        P-value: **`r OtherCat_GATE_TTest$p.value`**  
+        Test Statistic: **`r OtherCat_GATE_TTest$statistic`**  
+        Degrees of Freedom: **`r OtherCat_GATE_TTest$parameter`**  
+        Estimated difference in means: **`r OtherCat_GATE_TTest$estimate`**  
+        
+```{r Scatter plots of Gate prices, include=FALSE}
+###############################################################
+# Include all prices on a single scatter plot
+#
+# and separately in a subplot x4
+###############################################################
+library(plotly)
+GATEPriceScatter <- plot_ly(data = RawData, type = 'scatter', mode = 'markers') %>%
+  add_lines(x = c(50,350),
+            y = c(50,350),
+            fill = 'tozeroy', fillcolor = 'rgba(240,240,240, 0.5)',
+            showlegend = FALSE,
+            line = list(color = 'rgb(200,200,200)', dash = 'dot')) %>%
+  add_trace(name = '<I>Pangasius</I>',
+            marker = list(symbol = 'circle', color = 'black'),
+            x = ~GatePRICE_Pang_1,
+            y = ~GatePRICE_Pang_2) %>%
+  add_trace(name = 'Tilapia',
+            marker = list(symbol = 'star', color = 'black'),
+    x = ~GatePRICE_Tila_1,
+            y = ~GatePRICE_Tila_2) %>%
+  add_trace(name = 'Carp',
+            marker = list(symbol = 'diamond', color = 'black'),
+    x = ~GatePRICE_Carp_1,
+            y = ~GatePRICE_Carp_2) %>%
+  add_trace(name = 'Other catfish',
+            marker = list(symbol = 'cross', color = 'black'),
+    x = ~GatePRICE_OtherCat_1,
+            y = ~GatePRICE_OtherCat_2) %>%
+  layout(
+    xaxis = list(title = "Gate Price Pre-COVID19",
+      range = c(50,350), showline = TRUE),
+    yaxis = list(title = "Gate Price Post-COVID19",
+      range = c(50,350), showline = TRUE)
+  )
+
+# Subplot
+GATEPriceScatter_Pang <- plot_ly(data = RawData, type = 'scatter', mode = 'markers') %>%
+  add_lines(x = c(50,350),
+            y = c(50,350),
+            fill = 'tozeroy', fillcolor = 'rgba(240,240,240, 0.5)',
+            showlegend = FALSE,
+            line = list(color = 'rgb(200,200,200)', dash = 'dot')) %>%
+  add_trace(name = '<I>Pangasius</I>',
+            marker = list(symbol = 'circle', color = 'black'),
+            x = ~GatePRICE_Pang_1,
+            y = ~GatePRICE_Pang_2) %>%
+  layout(
+    xaxis = list(title = "",
+      range = c(70,100), showline = TRUE),
+    yaxis = list(title = "Gate Price Post-COVID19 (BDT)",
+      range = c(70,100), showline = TRUE)
+  )
+
+GATEPriceScatter_Tila <- plot_ly(data = RawData, type = 'scatter', mode = 'markers') %>%
+  add_lines(x = c(50,350),
+            y = c(50,350),
+            fill = 'tozeroy', fillcolor = 'rgba(240,240,240, 0.5)',
+            showlegend = FALSE,
+            line = list(color = 'rgb(200,200,200)', dash = 'dot')) %>%
+  add_trace(name = 'Tilapia',
+            marker = list(symbol = 'star', color = 'black'),
+    x = ~GatePRICE_Tila_1,
+            y = ~GatePRICE_Tila_2) %>%
+  layout(
+    xaxis = list(title = "",
+      range = c(60,100), showline = TRUE),
+    yaxis = list(title = "",
+      range = c(60,100), showline = TRUE)
+  )
+
+GATEPriceScatter_Carp <- plot_ly(data = RawData, type = 'scatter', mode = 'markers') %>%
+  add_lines(x = c(50,350),
+            y = c(50,350),
+            fill = 'tozeroy', fillcolor = 'rgba(240,240,240, 0.5)',
+            showlegend = FALSE,
+            line = list(color = 'rgb(200,200,200)', dash = 'dot')) %>%
+  add_trace(name = 'Carp',
+            marker = list(symbol = 'diamond', color = 'black'),
+    x = ~GatePRICE_Carp_1,
+            y = ~GatePRICE_Carp_2) %>%
+  layout(
+    xaxis = list(title = "",
+      range = c(80,130), showline = TRUE),
+    yaxis = list(title = "",
+      range = c(80,130), showline = TRUE)
+  )
+
+GATEPriceScatter_Other <- plot_ly(data = RawData, type = 'scatter', mode = 'markers') %>%
+  add_lines(x = c(50,350),
+            y = c(50,350),
+            fill = 'tozeroy', fillcolor = 'rgba(240,240,240, 0.5)',
+            showlegend = FALSE,
+            line = list(color = 'rgb(200,200,200)', dash = 'dot')) %>%
+  add_trace(name = 'Other catfish',
+            marker = list(symbol = 'cross', color = 'black'),
+    x = ~GatePRICE_OtherCat_1,
+            y = ~GatePRICE_OtherCat_2) %>%
+  layout(
+    xaxis = list(title = "Gate Price Pre-COVID19 (BDT)",
+      range = c(210,330), showline = TRUE),
+    yaxis = list(title = "",
+      range = c(210,330), showline = TRUE)
+  )
+
+SubplotGATEPRICES <- subplot(GATEPriceScatter_Pang,
+                             GATEPriceScatter_Tila,
+                             GATEPriceScatter_Carp,
+                             GATEPriceScatter_Other,
+                             titleX = TRUE,
+                             titleY = TRUE,
+                             shareX = FALSE,
+                             shareY = FALSE,
+                             nrows = 2) %>%
+  layout(legend = list(x = 0.05, y = 0.95, borderwidth = 0.5))
+
+```
+
+### Scatter Plots 
+
+The gate prices were plotted as scatter plots of pre- and post covid 19 prices.  This shows whether there is price deflation or inflation due to the pandemic.  Will look at putting together with the consumer prices.
+
+`r SubplotGATEPRICES`
+
+```{r Consumer Prices of Finfish, include=FALSE}
+##############################################
+# Include some basic stats about gate prices
+##############################################
+library(data.table)
+ConsumerData <- setDT(ConsumerData)
+
+MeanMarket_Pang_1 <- mean(ConsumerData$Market_Pang_1, na.rm = TRUE)
+MeanMarket_Pang_2 <- mean(ConsumerData$Market_Pang_2, na.rm = TRUE)
+MeanMarket_Tila_1 <- mean(ConsumerData$Market_Tila_1, na.rm = TRUE)
+MeanMarket_Tila_2 <- mean(ConsumerData$Market_Tila_2, na.rm = TRUE)
+MeanMarket_Carp_1 <- mean(ConsumerData$Market_Carp_1, na.rm = TRUE)
+MeanMarket_Carp_2 <- mean(ConsumerData$Market_Carp_2, na.rm = TRUE)
+MeanMarket_OtherCat_1 <- mean(ConsumerData$Market_OtherCat_1, na.rm = TRUE)
+MeanMarket_OtherCat_2 <- mean(ConsumerData$Market_OtherCat_2, na.rm = TRUE)
+
+StdMarket_Pang_1 <- sd(ConsumerData$Market_Pang_1, na.rm = TRUE)
+StdMarket_Pang_2 <- sd(ConsumerData$Market_Pang_2, na.rm = TRUE)
+StdMarket_Tila_1 <- sd(ConsumerData$Market_Tila_1, na.rm = TRUE)
+StdMarket_Tila_2 <- sd(ConsumerData$Market_Tila_2, na.rm = TRUE)
+StdMarket_Carp_1 <- sd(ConsumerData$Market_Carp_1, na.rm = TRUE)
+StdMarket_Carp_2 <- sd(ConsumerData$Market_Carp_2, na.rm = TRUE)
+StdMarket_OtherCat_1 <- sd(ConsumerData$Market_OtherCat_1, na.rm = TRUE)
+StdMarket_OtherCat_2 <- sd(ConsumerData$Market_OtherCat_2, na.rm = TRUE)
+
+MeanMiddleMan_Pang_1 <- mean(ConsumerData[Category == "Aratdar", ]$Market_Pang_1, na.rm = TRUE)
+MeanMiddleMan_Pang_2 <- mean(ConsumerData[Category == "Aratdar", ]$Market_Pang_2, na.rm = TRUE)
+MeanMiddleMan_Tila_1 <- mean(ConsumerData[Category == "Aratdar", ]$Market_Tila_1, na.rm = TRUE)
+MeanMiddleMan_Tila_2 <- mean(ConsumerData[Category == "Aratdar", ]$Market_Tila_2, na.rm = TRUE)
+MeanMiddleMan_Carp_1 <- mean(ConsumerData[Category == "Aratdar", ]$Market_Carp_1, na.rm = TRUE)
+MeanMiddleMan_Carp_2 <- mean(ConsumerData[Category == "Aratdar", ]$Market_Carp_2, na.rm = TRUE)
+MeanMiddleMan_OtherCat_1 <- mean(ConsumerData[Category == "Aratdar", ]$Market_OtherCat_1, na.rm = TRUE)
+MeanMiddleMan_OtherCat_2 <- mean(ConsumerData[Category == "Aratdar", ]$Market_OtherCat_2, na.rm = TRUE)
+
+StdMiddleMan_Pang_1 <- sd(ConsumerData[Category == "Aratdar", ]$Market_Pang_1, na.rm = TRUE)
+StdMiddleMan_Pang_2 <- sd(ConsumerData[Category == "Aratdar", ]$Market_Pang_2, na.rm = TRUE)
+StdMiddleMan_Tila_1 <- sd(ConsumerData[Category == "Aratdar", ]$Market_Tila_1, na.rm = TRUE)
+StdMiddleMan_Tila_2 <- sd(ConsumerData[Category == "Aratdar", ]$Market_Tila_2, na.rm = TRUE)
+StdMiddleMan_Carp_1 <- sd(ConsumerData[Category == "Aratdar", ]$Market_Carp_1, na.rm = TRUE)
+StdMiddleMan_Carp_2 <- sd(ConsumerData[Category == "Aratdar", ]$Market_Carp_2, na.rm = TRUE)
+StdMiddleMan_OtherCat_1 <- sd(ConsumerData[Category == "Aratdar", ]$Market_OtherCat_1, na.rm = TRUE)
+StdMiddleMan_OtherCat_2 <- sd(ConsumerData[Category == "Aratdar", ]$Market_OtherCat_2, na.rm = TRUE)
+
+
+MeanRetailer_Pang_1 <- mean(ConsumerData[Category == "Paikar", ]$Market_Pang_1, na.rm = TRUE)
+MeanRetailer_Pang_2 <- mean(ConsumerData[Category == "Paikar", ]$Market_Pang_2, na.rm = TRUE)
+MeanRetailer_Tila_1 <- mean(ConsumerData[Category == "Paikar", ]$Market_Tila_1, na.rm = TRUE)
+MeanRetailer_Tila_2 <- mean(ConsumerData[Category == "Paikar", ]$Market_Tila_2, na.rm = TRUE)
+MeanRetailer_Carp_1 <- mean(ConsumerData[Category == "Paikar", ]$Market_Carp_1, na.rm = TRUE)
+MeanRetailer_Carp_2 <- mean(ConsumerData[Category == "Paikar", ]$Market_Carp_2, na.rm = TRUE)
+MeanRetailer_OtherCat_1 <- mean(ConsumerData[Category == "Paikar", ]$Market_OtherCat_1, na.rm = TRUE)
+MeanRetailer_OtherCat_2 <- mean(ConsumerData[Category == "Paikar", ]$Market_OtherCat_2, na.rm = TRUE)
+
+StdRetailer_Pang_1 <- sd(ConsumerData[Category == "Paikar", ]$Market_Pang_1, na.rm = TRUE)
+StdRetailer_Pang_2 <- sd(ConsumerData[Category == "Paikar", ]$Market_Pang_2, na.rm = TRUE)
+StdRetailer_Tila_1 <- sd(ConsumerData[Category == "Paikar", ]$Market_Tila_1, na.rm = TRUE)
+StdRetailer_Tila_2 <- sd(ConsumerData[Category == "Paikar", ]$Market_Tila_2, na.rm = TRUE)
+StdRetailer_Carp_1 <- sd(ConsumerData[Category == "Paikar", ]$Market_Carp_1, na.rm = TRUE)
+StdRetailer_Carp_2 <- sd(ConsumerData[Category == "Paikar", ]$Market_Carp_2, na.rm = TRUE)
+StdRetailer_OtherCat_1 <- sd(ConsumerData[Category == "Paikar", ]$Market_OtherCat_1, na.rm = TRUE)
+StdRetailer_OtherCat_2 <- sd(ConsumerData[Category == "Paikar", ]$Market_OtherCat_2, na.rm = TRUE)
+
+MeanConsumer_Pang_1 <- mean(ConsumerData[Category == "Consumer", ]$Market_Pang_1, na.rm = TRUE)
+MeanConsumer_Pang_2 <- mean(ConsumerData[Category == "Consumer", ]$Market_Pang_2, na.rm = TRUE)
+MeanConsumer_Tila_1 <- mean(ConsumerData[Category == "Consumer", ]$Market_Tila_1, na.rm = TRUE)
+MeanConsumer_Tila_2 <- mean(ConsumerData[Category == "Consumer", ]$Market_Tila_2, na.rm = TRUE)
+MeanConsumer_Carp_1 <- mean(ConsumerData[Category == "Consumer", ]$Market_Carp_1, na.rm = TRUE)
+MeanConsumer_Carp_2 <- mean(ConsumerData[Category == "Consumer", ]$Market_Carp_2, na.rm = TRUE)
+MeanConsumer_OtherCat_1 <- mean(ConsumerData[Category == "Consumer", ]$Market_OtherCat_1, na.rm = TRUE)
+MeanConsumer_OtherCat_2 <- mean(ConsumerData[Category == "Consumer", ]$Market_OtherCat_2, na.rm = TRUE)
+
+StdConsumer_Pang_1 <- sd(ConsumerData[Category == "Consumer", ]$Market_Pang_1, na.rm = TRUE)
+StdConsumer_Pang_2 <- sd(ConsumerData[Category == "Consumer", ]$Market_Pang_2, na.rm = TRUE)
+StdConsumer_Tila_1 <- sd(ConsumerData[Category == "Consumer", ]$Market_Tila_1, na.rm = TRUE)
+StdConsumer_Tila_2 <- sd(ConsumerData[Category == "Consumer", ]$Market_Tila_2, na.rm = TRUE)
+StdConsumer_Carp_1 <- sd(ConsumerData[Category == "Consumer", ]$Market_Carp_1, na.rm = TRUE)
+StdConsumer_Carp_2 <- sd(ConsumerData[Category == "Consumer", ]$Market_Carp_2, na.rm = TRUE)
+StdConsumer_OtherCat_1 <- sd(ConsumerData[Category == "Consumer", ]$Market_OtherCat_1, na.rm = TRUE)
+StdConsumer_OtherCat_2 <- sd(ConsumerData[Category == "Consumer", ]$Market_OtherCat_2, na.rm = TRUE)
+```
+
+### Mean consumer prices
+
+Prior to covid19 the mean consumer prices for fish were:  
+  
+ Pangasius: **`r MeanMarket_Pang_1`** +/- **`r StdMarket_Pang_1`**  
+ Tilapia: **`r MeanMarket_Tila_1`** +/- **`r StdMarket_Tila_1`**  
+ Carp: **`r MeanMarket_Carp_1`** +/- **`r StdMarket_Carp_1`**  
+ Other catfish: **`r MeanMarket_OtherCat_1`** +/- **`r StdMarket_OtherCat_1`**
  
+After covid19 the mean Market prices for fish were:  
+  
+ Pangasius: **`r MeanMarket_Pang_2`** +/- **`r StdMarket_Pang_2`**  
+ Tilapia: **`r MeanMarket_Tila_2`** +/- **`r StdMarket_Tila_2`**  
+ Carp: **`r MeanMarket_Carp_2`** +/- **`r StdMarket_Carp_2`**  
+ Other catfish: **`r MeanMarket_OtherCat_2`** +/- **`r StdMarket_OtherCat_2`**
+ 
+The percentage increase in prices were:  
+  Pangasius: **`r (MeanMarket_Pang_2 - MeanMarket_Pang_1) / MeanMarket_Pang_2 * 100`**  
+  Tilapia: **`r (MeanMarket_Tila_2 - MeanMarket_Tila_1) / MeanMarket_Tila_2 * 100`**  
+  Carp: **`r (MeanMarket_Carp_2 - MeanMarket_Carp_1) / MeanMarket_Carp_2 * 100`**  
+  Other catfish: **`r (MeanMarket_OtherCat_2 - MeanMarket_OtherCat_1) / MeanMarket_OtherCat_2 * 100`** 
+  
+The consumer data was based on **`r ConsumerData[Category == "Aratdar", .N, Category]$N`** Aratdar or Middlemen, **`r ConsumerData[Category == "Paikar", .N, Category]$N`** Paiker, or retailers, and **`r ConsumerData[Category == "Consumer", .N, Category]$N`** consumers. 
+  
+For each category of merchandiser the values are:
+
+#### Middlemen
+
+Prior to covid19 the mean consumer prices for fish were:  
+  
+ Pangasius: **`r MeanMiddleMan_Pang_1`** +/- **`r StdMiddleMan_Pang_1`**  
+ Tilapia: **`r MeanMiddleMan_Tila_1`** +/- **`r StdMiddleMan_Tila_1`**  
+ Carp: **`r MeanMiddleMan_Carp_1`** +/- **`r StdMiddleMan_Carp_1`**  
+ Other catfish: **`r MeanMiddleMan_OtherCat_1`** +/- **`r StdMiddleMan_OtherCat_1`**
+ 
+After covid19 the mean MiddleMan prices for fish were:  
+  
+ Pangasius: **`r MeanMiddleMan_Pang_2`** +/- **`r StdMiddleMan_Pang_2`**  
+ Tilapia: **`r MeanMiddleMan_Tila_2`** +/- **`r StdMiddleMan_Tila_2`**  
+ Carp: **`r MeanMiddleMan_Carp_2`** +/- **`r StdMiddleMan_Carp_2`**  
+ Other catfish: **`r MeanMiddleMan_OtherCat_2`** +/- **`r StdMiddleMan_OtherCat_2`**
+ 
+The percentage increase in prices were:  
+  Pangasius: **`r (MeanMiddleMan_Pang_2 - MeanMiddleMan_Pang_1) / MeanMiddleMan_Pang_2 * 100`**  
+  Tilapia: **`r (MeanMiddleMan_Tila_2 - MeanMiddleMan_Tila_1) / MeanMiddleMan_Tila_2 * 100`**  
+  Carp: **`r (MeanMiddleMan_Carp_2 - MeanMiddleMan_Carp_1) / MeanMiddleMan_Carp_2 * 100`**  
+  Other catfish: **`r (MeanMiddleMan_OtherCat_2 - MeanMiddleMan_OtherCat_1) / MeanMiddleMan_OtherCat_2 * 100`** 
+  
+#### Retailer
+
+Prior to covid19 the mean consumer prices for fish were:  
+  
+ Pangasius: **`r MeanRetailer_Pang_1`** +/- **`r StdRetailer_Pang_1`**  
+ Tilapia: **`r MeanRetailer_Tila_1`** +/- **`r StdRetailer_Tila_1`**  
+ Carp: **`r MeanRetailer_Carp_1`** +/- **`r StdRetailer_Carp_1`**  
+ Other catfish: **`r MeanRetailer_OtherCat_1`** +/- **`r StdRetailer_OtherCat_1`**
+ 
+After covid19 the mean Retailer prices for fish were:  
+  
+ Pangasius: **`r MeanRetailer_Pang_2`** +/- **`r StdRetailer_Pang_2`**  
+ Tilapia: **`r MeanRetailer_Tila_2`** +/- **`r StdRetailer_Tila_2`**  
+ Carp: **`r MeanRetailer_Carp_2`** +/- **`r StdRetailer_Carp_2`**  
+ Other catfish: **`r MeanRetailer_OtherCat_2`** +/- **`r StdRetailer_OtherCat_2`**
+ 
+The percentage increase in prices were:  
+  Pangasius: **`r (MeanRetailer_Pang_2 - MeanRetailer_Pang_1) / MeanRetailer_Pang_2 * 100`**  
+  Tilapia: **`r (MeanRetailer_Tila_2 - MeanRetailer_Tila_1) / MeanRetailer_Tila_2 * 100`**  
+  Carp: **`r (MeanRetailer_Carp_2 - MeanRetailer_Carp_1) / MeanRetailer_Carp_2 * 100`**  
+  Other catfish: **`r (MeanRetailer_OtherCat_2 - MeanRetailer_OtherCat_1) / MeanRetailer_OtherCat_2 * 100`**   
+  
+#### Consumer
+
+Prior to covid19 the mean consumer prices for fish were:  
+  
+ Pangasius: **`r MeanConsumer_Pang_1`** +/- **`r StdConsumer_Pang_1`**  
+ Tilapia: **`r MeanConsumer_Tila_1`** +/- **`r StdConsumer_Tila_1`**  
+ Carp: **`r MeanConsumer_Carp_1`** +/- **`r StdConsumer_Carp_1`**  
+ Other catfish: **`r MeanConsumer_OtherCat_1`** +/- **`r StdConsumer_OtherCat_1`**
+ 
+After covid19 the mean Consumer prices for fish were:  
+  
+ Pangasius: **`r MeanConsumer_Pang_2`** +/- **`r StdConsumer_Pang_2`**  
+ Tilapia: **`r MeanConsumer_Tila_2`** +/- **`r StdConsumer_Tila_2`**  
+ Carp: **`r MeanConsumer_Carp_2`** +/- **`r StdConsumer_Carp_2`**  
+ Other catfish: **`r MeanConsumer_OtherCat_2`** +/- **`r StdConsumer_OtherCat_2`**
+ 
+The percentage increase in prices were:  
+  Pangasius: **`r (MeanConsumer_Pang_2 - MeanConsumer_Pang_1) / MeanConsumer_Pang_2 * 100`**  
+  Tilapia: **`r (MeanConsumer_Tila_2 - MeanConsumer_Tila_1) / MeanConsumer_Tila_2 * 100`**  
+  Carp: **`r (MeanConsumer_Carp_2 - MeanConsumer_Carp_1) / MeanConsumer_Carp_2 * 100`**  
+  Other catfish: **`r (MeanConsumer_OtherCat_2 - MeanConsumer_OtherCat_1) / MeanConsumer_OtherCat_2 * 100`**    
+  
+### Product mark up
+
+Based on the mean gate prices and the mean selling price the mark up of the product was calculated.
+
+Mark up of the mean price of pangasius was:
+
+  Pre-covid: **`r (MeanMarket_Pang_1 - MeanGate_Pang_1)/MeanGate_Pang_1 * 100`** %  
+  Post-covid: **`r (MeanMarket_Pang_2 - MeanGate_Pang_2)/MeanGate_Pang_2 * 100`** %  
+  Diff: **`r ((MeanMarket_Pang_2 - MeanGate_Pang_2)/MeanGate_Pang_2 * 100) - ((MeanMarket_Pang_1 - MeanGate_Pang_1)/MeanGate_Pang_1 * 100)`** %  
+Mark up of the mean price of Tilapia was:
+
+  Pre-covid: **`r (MeanMarket_Tila_1 - MeanGate_Tila_1)/MeanGate_Tila_1 * 100`** %  
+  Post-covid: **`r (MeanMarket_Tila_2 - MeanGate_Tila_2)/MeanGate_Tila_2 * 100`** %  
+  Diff: **`r ((MeanMarket_Tila_2 - MeanGate_Tila_2)/MeanGate_Tila_2 * 100) - ((MeanMarket_Tila_1 - MeanGate_Tila_1)/MeanGate_Tila_1 * 100)`** %  
+   
+Mark up of the mean price of carp was:
+
+  Pre-covid: **`r (MeanMarket_Carp_1 - MeanGate_Carp_1)/MeanGate_Carp_1 * 100`** %  
+  Post-covid: **`r (MeanMarket_Carp_2 - MeanGate_Carp_2)/MeanGate_Carp_2 * 100`** %  
+  Diff: **`r ((MeanMarket_Carp_2 - MeanGate_Carp_2)/MeanGate_Carp_2 * 100) - ((MeanMarket_Carp_1 - MeanGate_Carp_1)/MeanGate_Carp_1 * 100)`** % 
+  
+Mark up of the mean price of other catfish was:
+
+  Pre-covid: **`r (MeanMarket_OtherCat_1 - MeanGate_OtherCat_1)/MeanGate_OtherCat_1 * 100`** %  
+  Post-covid: **`r (MeanMarket_OtherCat_2 - MeanGate_OtherCat_2)/MeanGate_OtherCat_2 * 100`** %  
+   Diff: **`r ((MeanMarket_OtherCat_2 - MeanGate_OtherCat_2)/MeanGate_OtherCat_2 * 100) - ((MeanMarket_OtherCat_1 - MeanGate_OtherCat_1)/MeanGate_OtherCat_1 * 100)`** %  
+   
+ And, for each of the category of sellers.  
+
+####  For Middlemen:
+  
+Mark up of the mean price of pangasius was:
+
+  Pre-covid: **`r (MeanMiddleMan_Pang_1 - MeanGate_Pang_1)/MeanGate_Pang_1 * 100`** %  
+  Post-covid: **`r (MeanMiddleMan_Pang_2 - MeanGate_Pang_2)/MeanGate_Pang_2 * 100`** %  
+  Diff: **`r ((MeanMiddleMan_Pang_2 - MeanGate_Pang_2)/MeanGate_Pang_2 * 100) - ((MeanMiddleMan_Pang_1 - MeanGate_Pang_1)/MeanGate_Pang_1 * 100)`** %  
+Mark up of the mean price of Tilapia was:
+
+  Pre-covid: **`r (MeanMiddleMan_Tila_1 - MeanGate_Tila_1)/MeanGate_Tila_1 * 100`** %  
+  Post-covid: **`r (MeanMiddleMan_Tila_2 - MeanGate_Tila_2)/MeanGate_Tila_2 * 100`** %  
+  Diff: **`r ((MeanMiddleMan_Tila_2 - MeanGate_Tila_2)/MeanGate_Tila_2 * 100) - ((MeanMiddleMan_Tila_1 - MeanGate_Tila_1)/MeanGate_Tila_1 * 100)`** %  
+   
+Mark up of the mean price of carp was:
+
+  Pre-covid: **`r (MeanMiddleMan_Carp_1 - MeanGate_Carp_1)/MeanGate_Carp_1 * 100`** %  
+  Post-covid: **`r (MeanMiddleMan_Carp_2 - MeanGate_Carp_2)/MeanGate_Carp_2 * 100`** %  
+  Diff: **`r ((MeanMiddleMan_Carp_2 - MeanGate_Carp_2)/MeanGate_Carp_2 * 100) - ((MeanMiddleMan_Carp_1 - MeanGate_Carp_1)/MeanGate_Carp_1 * 100)`** % 
+  
+Mark up of the mean price of other catfish was:
+
+  Pre-covid: **`r (MeanMiddleMan_OtherCat_1 - MeanGate_OtherCat_1)/MeanGate_OtherCat_1 * 100`** %  
+  Post-covid: **`r (MeanMiddleMan_OtherCat_2 - MeanGate_OtherCat_2)/MeanGate_OtherCat_2 * 100`** %  
+   Diff: **`r ((MeanMiddleMan_OtherCat_2 - MeanGate_OtherCat_2)/MeanGate_OtherCat_2 * 100) - ((MeanMiddleMan_OtherCat_1 - MeanGate_OtherCat_1)/MeanGate_OtherCat_1 * 100)`** %  
+   
+####  For Retailers:
+  
+Mark up of the mean price of pangasius was:
+
+  Pre-covid: **`r (MeanRetailer_Pang_1 - MeanGate_Pang_1)/MeanGate_Pang_1 * 100`** %  
+  Post-covid: **`r (MeanRetailer_Pang_2 - MeanGate_Pang_2)/MeanGate_Pang_2 * 100`** %  
+  Diff: **`r ((MeanRetailer_Pang_2 - MeanGate_Pang_2)/MeanGate_Pang_2 * 100) - ((MeanRetailer_Pang_1 - MeanGate_Pang_1)/MeanGate_Pang_1 * 100)`** %  
+Mark up of the mean price of Tilapia was:
+
+  Pre-covid: **`r (MeanRetailer_Tila_1 - MeanGate_Tila_1)/MeanGate_Tila_1 * 100`** %  
+  Post-covid: **`r (MeanRetailer_Tila_2 - MeanGate_Tila_2)/MeanGate_Tila_2 * 100`** %  
+  Diff: **`r ((MeanRetailer_Tila_2 - MeanGate_Tila_2)/MeanGate_Tila_2 * 100) - ((MeanRetailer_Tila_1 - MeanGate_Tila_1)/MeanGate_Tila_1 * 100)`** %  
+   
+Mark up of the mean price of carp was:
+
+  Pre-covid: **`r (MeanRetailer_Carp_1 - MeanGate_Carp_1)/MeanGate_Carp_1 * 100`** %  
+  Post-covid: **`r (MeanRetailer_Carp_2 - MeanGate_Carp_2)/MeanGate_Carp_2 * 100`** %  
+  Diff: **`r ((MeanRetailer_Carp_2 - MeanGate_Carp_2)/MeanGate_Carp_2 * 100) - ((MeanRetailer_Carp_1 - MeanGate_Carp_1)/MeanGate_Carp_1 * 100)`** % 
+  
+Mark up of the mean price of other catfish was:
+
+  Pre-covid: **`r (MeanRetailer_OtherCat_1 - MeanGate_OtherCat_1)/MeanGate_OtherCat_1 * 100`** %  
+  Post-covid: **`r (MeanRetailer_OtherCat_2 - MeanGate_OtherCat_2)/MeanGate_OtherCat_2 * 100`** %  
+   Diff: **`r ((MeanRetailer_OtherCat_2 - MeanGate_OtherCat_2)/MeanGate_OtherCat_2 * 100) - ((MeanRetailer_OtherCat_1 - MeanGate_OtherCat_1)/MeanGate_OtherCat_1 * 100)`** %  
+   
+####  For Consumers:
+  
+Mark up of the mean price of pangasius was:
+
+  Pre-covid: **`r (MeanConsumer_Pang_1 - MeanGate_Pang_1)/MeanGate_Pang_1 * 100`** %  
+  Post-covid: **`r (MeanConsumer_Pang_2 - MeanGate_Pang_2)/MeanGate_Pang_2 * 100`** %  
+  Diff: **`r ((MeanConsumer_Pang_2 - MeanGate_Pang_2)/MeanGate_Pang_2 * 100) - ((MeanConsumer_Pang_1 - MeanGate_Pang_1)/MeanGate_Pang_1 * 100)`** %  
+Mark up of the mean price of Tilapia was:
+
+  Pre-covid: **`r (MeanConsumer_Tila_1 - MeanGate_Tila_1)/MeanGate_Tila_1 * 100`** %  
+  Post-covid: **`r (MeanConsumer_Tila_2 - MeanGate_Tila_2)/MeanGate_Tila_2 * 100`** %  
+  Diff: **`r ((MeanConsumer_Tila_2 - MeanGate_Tila_2)/MeanGate_Tila_2 * 100) - ((MeanConsumer_Tila_1 - MeanGate_Tila_1)/MeanGate_Tila_1 * 100)`** %  
+   
+Mark up of the mean price of carp was:
+
+  Pre-covid: **`r (MeanConsumer_Carp_1 - MeanGate_Carp_1)/MeanGate_Carp_1 * 100`** %  
+  Post-covid: **`r (MeanConsumer_Carp_2 - MeanGate_Carp_2)/MeanGate_Carp_2 * 100`** %  
+  Diff: **`r ((MeanConsumer_Carp_2 - MeanGate_Carp_2)/MeanGate_Carp_2 * 100) - ((MeanConsumer_Carp_1 - MeanGate_Carp_1)/MeanGate_Carp_1 * 100)`** % 
+  
+Mark up of the mean price of other catfish was:
+
+  Pre-covid: **`r (MeanConsumer_OtherCat_1 - MeanGate_OtherCat_1)/MeanGate_OtherCat_1 * 100`** %  
+  Post-covid: **`r (MeanConsumer_OtherCat_2 - MeanGate_OtherCat_2)/MeanGate_OtherCat_2 * 100`** %  
+   Diff: **`r ((MeanConsumer_OtherCat_2 - MeanGate_OtherCat_2)/MeanGate_OtherCat_2 * 100) - ((MeanConsumer_OtherCat_1 - MeanGate_OtherCat_1)/MeanGate_OtherCat_1 * 100)`** %  
+   
+```{r Statistical analysis of significance of changes, include=FALSE}
+############################################################
+# Paired t-tests - all selling prices
+############################################################
+Pang_MARKET_TTest <- t.test(ConsumerData$Market_Pang_2,
+                          ConsumerData$Market_Pang_1,
+                          alternative = "two.sided",
+                          paired = TRUE,
+                          na.action = na.omit,
+                          var.equal = TRUE)
+Tila_MARKET_TTest <- t.test(ConsumerData$Market_Tila_2,
+                          ConsumerData$Market_Tila_1,
+                          alternative = "two.sided",
+                          paired = TRUE,
+                          na.action = na.omit,
+                          var.equal = TRUE)
+Carp_MARKET_TTest <- t.test(ConsumerData$Market_Carp_2,
+                          ConsumerData$Market_Carp_1,
+                          alternative = "two.sided",
+                          paired = TRUE,
+                          na.action = na.omit,
+                          var.equal = TRUE)
+OtherCat_MARKET_TTest <- t.test(ConsumerData$Market_OtherCat_2,
+                          ConsumerData$Market_OtherCat_1,
+                          alternative = "two.sided",
+                          paired = TRUE,
+                          na.action = na.omit,
+                          var.equal = TRUE)
+```
+
+### Statistical significance in changes in product selling prices
+
+
+To test if differences in prices were statistically significant a pairwise Student's T-test was performed on the data with two-tails.
+
+For pangasius Market prices:  
+        P-value: **`r Pang_MARKET_TTest$p.value`**  
+        Test Statistic: **`r Pang_MARKET_TTest$statistic`**  
+        Degrees of Freedom: **`r Pang_MARKET_TTest$parameter`**  
+        Estimated difference in means: **`r Pang_MARKET_TTest$estimate`**  
+
+For tilapia Market prices:  
+        P-value: **`r Tila_MARKET_TTest$p.value`**  
+        Test Statistic: **`r Tila_MARKET_TTest$statistic`**  
+        Degrees of Freedom: **`r Tila_MARKET_TTest$parameter`**  
+        Estimated difference in means: **`r Tila_MARKET_TTest$estimate`**  
+        
+For carp Market prices:  
+        P-value: **`r Carp_MARKET_TTest$p.value`**  
+        Test Statistic: **`r Carp_MARKET_TTest$statistic`**  
+        Degrees of Freedom: **`r Carp_MARKET_TTest$parameter`**  
+        Estimated difference in means: **`r Carp_MARKET_TTest$estimate`**  
+        
+For other catfish Market prices:  
+        P-value: **`r OtherCat_MARKET_TTest$p.value`**  
+        Test Statistic: **`r OtherCat_MARKET_TTest$statistic`**  
+        Degrees of Freedom: **`r OtherCat_MARKET_TTest$parameter`**  
+        Estimated difference in means: **`r OtherCat_MARKET_TTest$estimate`**  
+
+### Considering the product as a value chain
+
+During the process, the selling of the produce may exist as a value chain going from:
+
+Farm >> MiddleMan >> Retailer >> Consumer
+
+In this case, we can compare the mean prices at each stage to deduce the incremental price increases made at each step before and after COVID 19.
+
+The mean price difference for stage 1 Pangasius:
+  Pre-COVID is: **`r MeanMiddleMan_Pang_1 - MeanGate_Pang_1`** or **`r (MeanMiddleMan_Pang_1 - MeanGate_Pang_1)/MeanGate_Pang_1 * 100`%** 
+    
+  Post-COVID is: **`r MeanMiddleMan_Pang_2 - MeanGate_Pang_2`** or **`r (MeanMiddleMan_Pang_2 - MeanGate_Pang_2)/MeanGate_Pang_2 * 100`%** 
+  And the difference in markup for stage 1 is:  
+  **`r (MeanMiddleMan_Pang_2 - MeanGate_Pang_2) - (MeanMiddleMan_Pang_1 - MeanGate_Pang_1)`** or a markup percentage change of: 
+  **`r ((MeanMiddleMan_Pang_2 - MeanGate_Pang_2)/MeanGate_Pang_2 * 100) - ((MeanMiddleMan_Pang_1 - MeanGate_Pang_1)/MeanGate_Pang_1 * 100)`%**  
+    
+The mean price difference for stage 2 Pangasius:
+  Pre-COVID is: **`r MeanRetailer_Pang_1 - MeanMiddleMan_Pang_1`** or **`r (MeanRetailer_Pang_1 - MeanMiddleMan_Pang_1)/MeanMiddleMan_Pang_1 * 100`%**   
+  
+  Post-COVID is: **`r MeanRetailer_Pang_2 - MeanMiddleMan_Pang_2`** or **`r (MeanRetailer_Pang_2 - MeanMiddleMan_Pang_2)/MeanMiddleMan_Pang_2 * 100`%**
+  
+  And the difference in markup for stage 2 is:  
+  **`r (MeanRetailer_Pang_2 - MeanMiddleMan_Pang_2) - (MeanRetailer_Pang_1 - MeanMiddleMan_Pang_1)`** or a markup percentage change of: 
+  **`r ((MeanRetailer_Pang_2 - MeanMiddleMan_Pang_2)/MeanMiddleMan_Pang_2 * 100) - ((MeanRetailer_Pang_1 - MeanMiddleMan_Pang_1)/MeanMiddleMan_Pang_1 * 100)`%**  
+  
+  
+  The mean price difference for stage 3 Pangasius:
+  Pre-COVID is: **`r MeanConsumer_Pang_1 - MeanRetailer_Pang_1`** or **`r (MeanConsumer_Pang_1 - MeanRetailer_Pang_1)/MeanRetailer_Pang_1 * 100`%**   
+  
+  Post-COVID is: **`r MeanConsumer_Pang_2 - MeanRetailer_Pang_2`** or **`r (MeanConsumer_Pang_2 - MeanRetailer_Pang_2)/MeanRetailer_Pang_2 * 100`%**
+  
+  And the difference in markup for stage 3 is:  
+  **`r (MeanConsumer_Pang_2 - MeanRetailer_Pang_2) - (MeanConsumer_Pang_1 - MeanRetailer_Pang_1)`** or a markup percentage change of: 
+  **`r ((MeanConsumer_Pang_2 - MeanRetailer_Pang_2)/MeanRetailer_Pang_2 * 100) - ((MeanConsumer_Pang_1 - MeanRetailer_Pang_1)/MeanRetailer_Pang_1 * 100)`%**  
+  
+  
+  
+  
+  The mean price difference for stage 1 Tilapia:
+  Pre-COVID is: **`r MeanMiddleMan_Tila_1 - MeanGate_Tila_1`** or **`r (MeanMiddleMan_Tila_1 - MeanGate_Tila_1)/MeanGate_Tila_1 * 100`%** 
+    
+  Post-COVID is: **`r MeanMiddleMan_Tila_2 - MeanGate_Tila_2`** or **`r (MeanMiddleMan_Tila_2 - MeanGate_Tila_2)/MeanGate_Tila_2 * 100`%** 
+  And the difference in markup for stage 1 is:  
+  **`r (MeanMiddleMan_Tila_2 - MeanGate_Tila_2) - (MeanMiddleMan_Tila_1 - MeanGate_Tila_1)`** or a markup percentage change of: 
+  **`r ((MeanMiddleMan_Tila_2 - MeanGate_Tila_2)/MeanGate_Tila_2 * 100) - ((MeanMiddleMan_Tila_1 - MeanGate_Tila_1)/MeanGate_Tila_1 * 100)`%**  
+    
+The mean price difference for stage 2 Tilapia:
+  Pre-COVID is: **`r MeanRetailer_Tila_1 - MeanMiddleMan_Tila_1`** or **`r (MeanRetailer_Tila_1 - MeanMiddleMan_Tila_1)/MeanMiddleMan_Tila_1 * 100`%**   
+  
+  Post-COVID is: **`r MeanRetailer_Tila_2 - MeanMiddleMan_Tila_2`** or **`r (MeanRetailer_Tila_2 - MeanMiddleMan_Tila_2)/MeanMiddleMan_Tila_2 * 100`%**
+  
+  And the difference in markup for stage 2 is:  
+  **`r (MeanRetailer_Tila_2 - MeanMiddleMan_Tila_2) - (MeanRetailer_Tila_1 - MeanMiddleMan_Tila_1)`** or a markup percentage change of: 
+  **`r ((MeanRetailer_Tila_2 - MeanMiddleMan_Tila_2)/MeanMiddleMan_Tila_2 * 100) - ((MeanRetailer_Tila_1 - MeanMiddleMan_Tila_1)/MeanMiddleMan_Tila_1 * 100)`%**  
+  
+  
+  The mean price difference for stage 3 Tilapia:
+  Pre-COVID is: **`r MeanConsumer_Tila_1 - MeanRetailer_Tila_1`** or **`r (MeanConsumer_Tila_1 - MeanRetailer_Tila_1)/MeanRetailer_Tila_1 * 100`%**   
+  
+  Post-COVID is: **`r MeanConsumer_Tila_2 - MeanRetailer_Tila_2`** or **`r (MeanConsumer_Tila_2 - MeanRetailer_Tila_2)/MeanRetailer_Tila_2 * 100`%**
+  
+  And the difference in markup for stage 3 is:  
+  **`r (MeanConsumer_Tila_2 - MeanRetailer_Tila_2) - (MeanConsumer_Tila_1 - MeanRetailer_Tila_1)`** or a markup percentage change of: 
+  **`r ((MeanConsumer_Tila_2 - MeanRetailer_Tila_2)/MeanRetailer_Tila_2 * 100) - ((MeanConsumer_Tila_1 - MeanRetailer_Tila_1)/MeanRetailer_Tila_1 * 100)`%** 
+        
+        
+  
+  The mean price difference for stage 1 Carp:
+  Pre-COVID is: **`r MeanMiddleMan_Carp_1 - MeanGate_Carp_1`** or **`r (MeanMiddleMan_Carp_1 - MeanGate_Carp_1)/MeanGate_Carp_1 * 100`%** 
+    
+  Post-COVID is: **`r MeanMiddleMan_Carp_2 - MeanGate_Carp_2`** or **`r (MeanMiddleMan_Carp_2 - MeanGate_Carp_2)/MeanGate_Carp_2 * 100`%** 
+  And the difference in markup for stage 1 is:  
+  **`r (MeanMiddleMan_Carp_2 - MeanGate_Carp_2) - (MeanMiddleMan_Carp_1 - MeanGate_Carp_1)`** or a markup percentage change of: 
+  **`r ((MeanMiddleMan_Carp_2 - MeanGate_Carp_2)/MeanGate_Carp_2 * 100) - ((MeanMiddleMan_Carp_1 - MeanGate_Carp_1)/MeanGate_Carp_1 * 100)`%**  
+    
+The mean price difference for stage 2 Carp:
+  Pre-COVID is: **`r MeanRetailer_Carp_1 - MeanMiddleMan_Carp_1`** or **`r (MeanRetailer_Carp_1 - MeanMiddleMan_Carp_1)/MeanMiddleMan_Carp_1 * 100`%**   
+  
+  Post-COVID is: **`r MeanRetailer_Carp_2 - MeanMiddleMan_Carp_2`** or **`r (MeanRetailer_Carp_2 - MeanMiddleMan_Carp_2)/MeanMiddleMan_Carp_2 * 100`%**
+  
+  And the difference in markup for stage 2 is:  
+  **`r (MeanRetailer_Carp_2 - MeanMiddleMan_Carp_2) - (MeanRetailer_Carp_1 - MeanMiddleMan_Carp_1)`** or a markup percentage change of: 
+  **`r ((MeanRetailer_Carp_2 - MeanMiddleMan_Carp_2)/MeanMiddleMan_Carp_2 * 100) - ((MeanRetailer_Carp_1 - MeanMiddleMan_Carp_1)/MeanMiddleMan_Carp_1 * 100)`%**  
+  
+  
+  The mean price difference for stage 3 Carp:
+  Pre-COVID is: **`r MeanConsumer_Carp_1 - MeanRetailer_Carp_1`** or **`r (MeanConsumer_Carp_1 - MeanRetailer_Carp_1)/MeanRetailer_Carp_1 * 100`%**   
+  
+  Post-COVID is: **`r MeanConsumer_Carp_2 - MeanRetailer_Carp_2`** or **`r (MeanConsumer_Carp_2 - MeanRetailer_Carp_2)/MeanRetailer_Carp_2 * 100`%**
+  
+  And the difference in markup for stage 3 is:  
+  **`r (MeanConsumer_Carp_2 - MeanRetailer_Carp_2) - (MeanConsumer_Carp_1 - MeanRetailer_Carp_1)`** or a markup percentage change of: 
+  **`r ((MeanConsumer_Carp_2 - MeanRetailer_Carp_2)/MeanRetailer_Carp_2 * 100) - ((MeanConsumer_Carp_1 - MeanRetailer_Carp_1)/MeanRetailer_Carp_1 * 100)`%** 
+  
+    The mean price difference for stage 1 OtherCat:
+  Pre-COVID is: **`r MeanMiddleMan_OtherCat_1 - MeanGate_OtherCat_1`** or **`r (MeanMiddleMan_OtherCat_1 - MeanGate_OtherCat_1)/MeanGate_OtherCat_1 * 100`%** 
+    
+  Post-COVID is: **`r MeanMiddleMan_OtherCat_2 - MeanGate_OtherCat_2`** or **`r (MeanMiddleMan_OtherCat_2 - MeanGate_OtherCat_2)/MeanGate_OtherCat_2 * 100`%** 
+  And the difference in markup for stage 1 is:  
+  **`r (MeanMiddleMan_OtherCat_2 - MeanGate_OtherCat_2) - (MeanMiddleMan_OtherCat_1 - MeanGate_OtherCat_1)`** or a markup percentage change of: 
+  **`r ((MeanMiddleMan_OtherCat_2 - MeanGate_OtherCat_2)/MeanGate_OtherCat_2 * 100) - ((MeanMiddleMan_OtherCat_1 - MeanGate_OtherCat_1)/MeanGate_OtherCat_1 * 100)`%**  
+    
+The mean price difference for stage 2 OtherCat:
+  Pre-COVID is: **`r MeanRetailer_OtherCat_1 - MeanMiddleMan_OtherCat_1`** or **`r (MeanRetailer_OtherCat_1 - MeanMiddleMan_OtherCat_1)/MeanMiddleMan_OtherCat_1 * 100`%**   
+  
+  Post-COVID is: **`r MeanRetailer_OtherCat_2 - MeanMiddleMan_OtherCat_2`** or **`r (MeanRetailer_OtherCat_2 - MeanMiddleMan_OtherCat_2)/MeanMiddleMan_OtherCat_2 * 100`%**
+  
+  And the difference in markup for stage 2 is:  
+  **`r (MeanRetailer_OtherCat_2 - MeanMiddleMan_OtherCat_2) - (MeanRetailer_OtherCat_1 - MeanMiddleMan_OtherCat_1)`** or a markup percentage change of: 
+  **`r ((MeanRetailer_OtherCat_2 - MeanMiddleMan_OtherCat_2)/MeanMiddleMan_OtherCat_2 * 100) - ((MeanRetailer_OtherCat_1 - MeanMiddleMan_OtherCat_1)/MeanMiddleMan_OtherCat_1 * 100)`%**  
+  
+  
+  The mean price difference for stage 3 OtherCat:
+  Pre-COVID is: **`r MeanConsumer_OtherCat_1 - MeanRetailer_OtherCat_1`** or **`r (MeanConsumer_OtherCat_1 - MeanRetailer_OtherCat_1)/MeanRetailer_OtherCat_1 * 100`%**   
+  
+  Post-COVID is: **`r MeanConsumer_OtherCat_2 - MeanRetailer_OtherCat_2`** or **`r (MeanConsumer_OtherCat_2 - MeanRetailer_OtherCat_2)/MeanRetailer_OtherCat_2 * 100`%**
+  
+  And the difference in markup for stage 3 is:  
+  **`r (MeanConsumer_OtherCat_2 - MeanRetailer_OtherCat_2) - (MeanConsumer_OtherCat_1 - MeanRetailer_OtherCat_1)`** or a markup percentage change of: 
+  **`r ((MeanConsumer_OtherCat_2 - MeanRetailer_OtherCat_2)/MeanRetailer_OtherCat_2 * 100) - ((MeanConsumer_OtherCat_1 - MeanRetailer_OtherCat_1)/MeanRetailer_OtherCat_1 * 100)`%** 
+        
