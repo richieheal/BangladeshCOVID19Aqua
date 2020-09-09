@@ -14,6 +14,13 @@ knitr::opts_chunk$set(echo = TRUE)
 DataFile <- "COVIDAquaculture_Data_RawDATA.csv"
 RawData <- read.csv(DataFile, header = TRUE, skip = 2, stringsAsFactors = TRUE)
 
+#######################################################################
+# Make a numeric indicator
+#######################################################################
+library(data.table)
+RawData <- setDT(RawData)
+RawData[, FarmNumber := .I]
+
 ##########################################
 # Load in the consumer data
 ##########################################
@@ -39,8 +46,6 @@ This document details the analysis of farm survey data taken pre and post COVID 
 #############################################################
 # Overall figures
 #############################################################
-library(data.table)
-RawData <- setDT(RawData)
 RawData[, TotLab_1 := (PermLab_1 + SeasLab_1 + NonAqLab_1)]
 RawData[, TotLab_2 := (PermLab_2 + SeasLab_2 + NonAqLab_2)]
 RawData[, DiffLab := (TotLab_2 - TotLab_1)]
@@ -411,12 +416,12 @@ NonAqColor <- "rgb(141,160,203)"
 MarkerSize <- 7
 
 SingleTotalLabDumbbellPlot <- plot_ly(data = RawData, type = 'scatter', mode = 'markers') %>%
-  add_segments(x = ~PermLabCOST_2, xend = ~PermLabCOST_1, y = ~(((as.numeric(X)-1) * 3) + 1), yend = ~(((as.numeric(X)-1) * 3) + 1), 
+  add_segments(x = ~PermLabCOST_2, xend = ~PermLabCOST_1, y = ~(((FarmNumber-1) * 3) + 1), yend = ~(((FarmNumber-1) * 3) + 1), 
                showlegend = TRUE,
                name = 'Permanent',
                line = list(color = PermColor)) %>%
   add_markers(x = ~PermLabCOST_1,
-              y = ~(((as.numeric(X)-1) * 3) + 1),
+              y = ~(((FarmNumber-1) * 3) + 1),
               name = "Pre-Covid",
               showlegend = TRUE,
               marker = list(size = MarkerSize, color = 'rgb(80,80,80)',
@@ -425,16 +430,16 @@ SingleTotalLabDumbbellPlot <- plot_ly(data = RawData, type = 'scatter', mode = '
   add_markers(name = 'Post-Covid',
             showlegend = TRUE,
               x = ~PermLabCOST_2,
-            y = ~(((as.numeric(X)-1) * 3) + 1),
+            y = ~(((FarmNumber-1) * 3) + 1),
             marker = list(size = MarkerSize, color = 'rgb(0,0,0)',
                           line = list(color = 'rgb(0,0,0)'),
                           sizemode = 'diameter', opacity = 0.5)) %>%
-  add_segments(x = ~SeasLabCOST_2, xend = ~SeasLabCOST_1, y = ~(((as.numeric(X)-1) * 3) + 2), yend = ~(((as.numeric(X)-1) * 3) + 2), 
+  add_segments(x = ~SeasLabCOST_2, xend = ~SeasLabCOST_1, y = ~(((FarmNumber-1) * 3) + 2), yend = ~(((FarmNumber-1) * 3) + 2), 
                showlegend = TRUE,
                name = 'Seasonal',
                line = list(color = SeasColor)) %>%
   add_markers(x = ~SeasLabCOST_1,
-              y = ~(((as.numeric(X)-1) * 3) + 2),
+              y = ~(((FarmNumber-1) * 3) + 2),
               name = "Pre-Covid",
               showlegend = FALSE,
               marker = list(size = MarkerSize, color = 'rgb(80,80,80)',
@@ -443,16 +448,16 @@ SingleTotalLabDumbbellPlot <- plot_ly(data = RawData, type = 'scatter', mode = '
   add_markers(name = 'Post-Covid',
               showlegend = FALSE,
             x = ~SeasLabCOST_2,
-            y = ~(((as.numeric(X)-1) * 3) + 2),
+            y = ~(((FarmNumber-1) * 3) + 2),
             marker = list(size = MarkerSize, color = 'rgb(0,0,0)',
                           line = list(color = 'rgb(0,0,0)'),
                           sizemode = 'diameter', opacity = 0.5)) %>%
-  add_segments(x = ~NonAqLabCOST_2, xend = ~NonAqLabCOST_1, y = ~(((as.numeric(X)-1) * 3) + 3), yend = ~(((as.numeric(X)-1) * 3) + 3), 
+  add_segments(x = ~NonAqLabCOST_2, xend = ~NonAqLabCOST_1, y = ~(((FarmNumber-1) * 3) + 3), yend = ~(((FarmNumber-1) * 3) + 3), 
                showlegend = TRUE,
                name = 'Non-technical',
                line = list(color = NonAqColor)) %>%
   add_markers(x = ~NonAqLabCOST_1,
-              y = ~(((as.numeric(X)-1) * 3) + 3),
+              y = ~(((FarmNumber-1) * 3) + 3),
               name = "Pre-Covid",
               showlegend = FALSE,
               marker = list(size = MarkerSize, color = 'rgb(80,80,80)',
@@ -461,7 +466,7 @@ SingleTotalLabDumbbellPlot <- plot_ly(data = RawData, type = 'scatter', mode = '
   add_markers(name = 'Post-Covid',
               showlegend = FALSE,
             x = ~NonAqLabCOST_2,
-            y = ~(((as.numeric(X)-1) * 3) + 3),
+            y = ~(((FarmNumber-1) * 3) + 3),
             marker = list(size = MarkerSize, color = 'rgb(0,0,0)',
                           line = list(color = 'rgb(80,80,80)'),
                           sizemode = 'diameter', opacity = 0.5)) %>%
@@ -482,12 +487,12 @@ PostMarkerColor = 'rgb(0,0,0)'
 SegmentLineColor = 'rgb(50,50,50)'
 
 SingleTotalLabDumbbellPlot_PERM <- plot_ly(data = RawData, type = 'scatter', mode = 'markers') %>%
-  add_segments(x = ~PermLabCOST_2, xend = ~PermLabCOST_1, y = ~as.numeric(X), yend = ~as.numeric(X), 
+  add_segments(x = ~PermLabCOST_2, xend = ~PermLabCOST_1, y = ~FarmNumber, yend = ~FarmNumber, 
                showlegend = FALSE,
                name = 'Permanent',
                line = list(color = SegmentLineColor)) %>%
   add_markers(x = ~PermLabCOST_1,
-              y = ~as.numeric(X),
+              y = ~FarmNumber,
               name = "Pre-Covid",
               showlegend = TRUE,
               marker = list(symbol = PreMarker,
@@ -498,7 +503,7 @@ SingleTotalLabDumbbellPlot_PERM <- plot_ly(data = RawData, type = 'scatter', mod
   add_markers(name = 'Post-Covid',
             showlegend = TRUE,
               x = ~PermLabCOST_2,
-            y = ~as.numeric(X),
+            y = ~FarmNumber,
             marker = list(symbol = PostMarker,
                           size = MarkerSize, 
                           color = PostMarkerColor,
@@ -522,12 +527,12 @@ SingleTotalLabDumbbellPlot_PERM <- plot_ly(data = RawData, type = 'scatter', mod
   )
 
 SingleTotalLabDumbbellPlot_SEAS <- plot_ly(data = RawData, type = 'scatter', mode = 'markers') %>%
-  add_segments(x = ~SeasLabCOST_2, xend = ~SeasLabCOST_1, y = ~as.numeric(X), yend = ~as.numeric(X), 
+  add_segments(x = ~SeasLabCOST_2, xend = ~SeasLabCOST_1, y = ~FarmNumber, yend = ~FarmNumber, 
                showlegend = FALSE,
                name = 'Seasonal',
                line = list(color = SegmentLineColor)) %>%
   add_markers(x = ~SeasLabCOST_1,
-              y = ~as.numeric(X),
+              y = ~FarmNumber,
               name = "Pre-Covid",
               showlegend = FALSE,
               marker = list(symbol = PreMarker,
@@ -538,7 +543,7 @@ SingleTotalLabDumbbellPlot_SEAS <- plot_ly(data = RawData, type = 'scatter', mod
   add_markers(name = 'Post-Covid',
               showlegend = FALSE,
             x = ~SeasLabCOST_2,
-            y = ~as.numeric(X),
+            y = ~FarmNumber,
             marker = list(symbol = PostMarker,
                           size = MarkerSize, 
                           color = PostMarkerColor,
@@ -562,12 +567,12 @@ SingleTotalLabDumbbellPlot_SEAS <- plot_ly(data = RawData, type = 'scatter', mod
   )
 
 SingleTotalLabDumbbellPlot_NONAQ <- plot_ly(data = RawData, type = 'scatter', mode = 'markers') %>%
-  add_segments(x = ~NonAqLabCOST_2, xend = ~NonAqLabCOST_1, y = ~as.numeric(X), yend = ~as.numeric(X), 
+  add_segments(x = ~NonAqLabCOST_2, xend = ~NonAqLabCOST_1, y = ~FarmNumber, yend = ~FarmNumber, 
                showlegend = FALSE,
                name = 'Non-technical',
                line = list(color = SegmentLineColor)) %>%
   add_markers(x = ~NonAqLabCOST_1,
-              y = ~as.numeric(X),
+              y = ~FarmNumber,
               name = "Pre-Covid",
               showlegend = FALSE,
               marker = list(
@@ -579,7 +584,7 @@ SingleTotalLabDumbbellPlot_NONAQ <- plot_ly(data = RawData, type = 'scatter', mo
   add_markers(name = 'Post-Covid',
               showlegend = FALSE,
             x = ~NonAqLabCOST_2,
-            y = ~as.numeric(X),
+            y = ~FarmNumber,
             marker = list(symbol = PostMarker,
                           size = MarkerSize, 
                           color = PostMarkerColor,
@@ -1292,7 +1297,7 @@ The mean price difference for stage 2 Tilapia:
   The mean price difference for stage 1 Carp:
   Pre-COVID is: **`r MeanMiddleMan_Carp_1 - MeanGate_Carp_1`** or **`r (MeanMiddleMan_Carp_1 - MeanGate_Carp_1)/MeanGate_Carp_1 * 100`%** 
     
-  Post-COVID is: **`r MeanMiddleMan_Carp_2 - MeanGate_Carp_2`** or **`r (MeanMiddleMan_Carp_2 - MeanGate_Carp_2)/MeanGate_Carp_2 * 100`%** 
+  Post-COVID is: **`r MeanMiddleMan_Carp_2 - MeanGate_Carp_2`** or **`r (MeanMiddleMan_Carp_2 - MeanGate_Carp_2)/MeanGate_Carp_2 * 100`%**   
   And the difference in markup for stage 1 is:  
   **`r (MeanMiddleMan_Carp_2 - MeanGate_Carp_2) - (MeanMiddleMan_Carp_1 - MeanGate_Carp_1)`** or a markup percentage change of: 
   **`r ((MeanMiddleMan_Carp_2 - MeanGate_Carp_2)/MeanGate_Carp_2 * 100) - ((MeanMiddleMan_Carp_1 - MeanGate_Carp_1)/MeanGate_Carp_1 * 100)`%**  
@@ -1300,7 +1305,7 @@ The mean price difference for stage 2 Tilapia:
 The mean price difference for stage 2 Carp:
   Pre-COVID is: **`r MeanRetailer_Carp_1 - MeanMiddleMan_Carp_1`** or **`r (MeanRetailer_Carp_1 - MeanMiddleMan_Carp_1)/MeanMiddleMan_Carp_1 * 100`%**   
   
-  Post-COVID is: **`r MeanRetailer_Carp_2 - MeanMiddleMan_Carp_2`** or **`r (MeanRetailer_Carp_2 - MeanMiddleMan_Carp_2)/MeanMiddleMan_Carp_2 * 100`%**
+  Post-COVID is: **`r MeanRetailer_Carp_2 - MeanMiddleMan_Carp_2`** or **`r (MeanRetailer_Carp_2 - MeanMiddleMan_Carp_2)/MeanMiddleMan_Carp_2 * 100`%**  
   
   And the difference in markup for stage 2 is:  
   **`r (MeanRetailer_Carp_2 - MeanMiddleMan_Carp_2) - (MeanRetailer_Carp_1 - MeanMiddleMan_Carp_1)`** or a markup percentage change of: 
@@ -1310,8 +1315,7 @@ The mean price difference for stage 2 Carp:
   The mean price difference for stage 3 Carp:
   Pre-COVID is: **`r MeanConsumer_Carp_1 - MeanRetailer_Carp_1`** or **`r (MeanConsumer_Carp_1 - MeanRetailer_Carp_1)/MeanRetailer_Carp_1 * 100`%**   
   
-  Post-COVID is: **`r MeanConsumer_Carp_2 - MeanRetailer_Carp_2`** or **`r (MeanConsumer_Carp_2 - MeanRetailer_Carp_2)/MeanRetailer_Carp_2 * 100`%**
-  
+  Post-COVID is: **`r MeanConsumer_Carp_2 - MeanRetailer_Carp_2`** or **`r (MeanConsumer_Carp_2 - MeanRetailer_Carp_2)/MeanRetailer_Carp_2 * 100`%**  
   And the difference in markup for stage 3 is:  
   **`r (MeanConsumer_Carp_2 - MeanRetailer_Carp_2) - (MeanConsumer_Carp_1 - MeanRetailer_Carp_1)`** or a markup percentage change of: 
   **`r ((MeanConsumer_Carp_2 - MeanRetailer_Carp_2)/MeanRetailer_Carp_2 * 100) - ((MeanConsumer_Carp_1 - MeanRetailer_Carp_1)/MeanRetailer_Carp_1 * 100)`%** 
@@ -1319,7 +1323,7 @@ The mean price difference for stage 2 Carp:
     The mean price difference for stage 1 OtherCat:
   Pre-COVID is: **`r MeanMiddleMan_OtherCat_1 - MeanGate_OtherCat_1`** or **`r (MeanMiddleMan_OtherCat_1 - MeanGate_OtherCat_1)/MeanGate_OtherCat_1 * 100`%** 
     
-  Post-COVID is: **`r MeanMiddleMan_OtherCat_2 - MeanGate_OtherCat_2`** or **`r (MeanMiddleMan_OtherCat_2 - MeanGate_OtherCat_2)/MeanGate_OtherCat_2 * 100`%** 
+  Post-COVID is: **`r MeanMiddleMan_OtherCat_2 - MeanGate_OtherCat_2`** or **`r (MeanMiddleMan_OtherCat_2 - MeanGate_OtherCat_2)/MeanGate_OtherCat_2 * 100`%**  
   And the difference in markup for stage 1 is:  
   **`r (MeanMiddleMan_OtherCat_2 - MeanGate_OtherCat_2) - (MeanMiddleMan_OtherCat_1 - MeanGate_OtherCat_1)`** or a markup percentage change of: 
   **`r ((MeanMiddleMan_OtherCat_2 - MeanGate_OtherCat_2)/MeanGate_OtherCat_2 * 100) - ((MeanMiddleMan_OtherCat_1 - MeanGate_OtherCat_1)/MeanGate_OtherCat_1 * 100)`%**  
@@ -1327,7 +1331,7 @@ The mean price difference for stage 2 Carp:
 The mean price difference for stage 2 OtherCat:
   Pre-COVID is: **`r MeanRetailer_OtherCat_1 - MeanMiddleMan_OtherCat_1`** or **`r (MeanRetailer_OtherCat_1 - MeanMiddleMan_OtherCat_1)/MeanMiddleMan_OtherCat_1 * 100`%**   
   
-  Post-COVID is: **`r MeanRetailer_OtherCat_2 - MeanMiddleMan_OtherCat_2`** or **`r (MeanRetailer_OtherCat_2 - MeanMiddleMan_OtherCat_2)/MeanMiddleMan_OtherCat_2 * 100`%**
+  Post-COVID is: **`r MeanRetailer_OtherCat_2 - MeanMiddleMan_OtherCat_2`** or **`r (MeanRetailer_OtherCat_2 - MeanMiddleMan_OtherCat_2)/MeanMiddleMan_OtherCat_2 * 100`%**  
   
   And the difference in markup for stage 2 is:  
   **`r (MeanRetailer_OtherCat_2 - MeanMiddleMan_OtherCat_2) - (MeanRetailer_OtherCat_1 - MeanMiddleMan_OtherCat_1)`** or a markup percentage change of: 
@@ -1342,4 +1346,1436 @@ The mean price difference for stage 2 OtherCat:
   And the difference in markup for stage 3 is:  
   **`r (MeanConsumer_OtherCat_2 - MeanRetailer_OtherCat_2) - (MeanConsumer_OtherCat_1 - MeanRetailer_OtherCat_1)`** or a markup percentage change of: 
   **`r ((MeanConsumer_OtherCat_2 - MeanRetailer_OtherCat_2)/MeanRetailer_OtherCat_2 * 100) - ((MeanConsumer_OtherCat_1 - MeanRetailer_OtherCat_1)/MeanRetailer_OtherCat_1 * 100)`%** 
+
+```{r Funnel Plot, include = FALSE}
+####################################################################
+#
+# Create 2 funnel charts with mean prices of the 4 types
+#
+####################################################################
+library(plotly)
+Funnel_PreCOVID <- plot_ly(
+  type = 'funnel',
+  name = 'Pangasius',
+  y = c("Consumer", "Retailer", "Middleman", "Farmer"), # The selling stages
+  x = round(c(MeanConsumer_Pang_1, MeanRetailer_Pang_1, MeanMiddleMan_Pang_1, MeanGate_Pang_1), digits = 0), # The mean selling prices
+  textinfo = "value+percent initial",
+  marker = list(color = c('rgb(80,80,80)', 'rgb(80,80,80)', 'rgb(80,80,80)', 'rgb(80,80,80)'))
+) %>%
+  add_trace(
+    type = 'funnel',
+  name = 'Tilapia',
+  y = c("Consumer", "Retailer", "Middleman", "Farmer"), # The selling stages
+  x = round(c(MeanConsumer_Tila_1, MeanRetailer_Tila_1, MeanMiddleMan_Tila_1, MeanGate_Tila_1), digits = 0), # The mean selling prices
+  textinfo = "value+percent initial",
+  marker = list(color = c('rgb(120,120,120)', 'rgb(120,120,120)', 'rgb(120,120,120)', 'rgb(120,120,120)'))
+  ) %>%
+  add_trace(
+    type = 'funnel',
+  name = 'Carp',
+  y = c("Consumer", "Retailer", "Middleman", "Farmer"), # The selling stages
+  x = round(c(MeanConsumer_Carp_1, MeanRetailer_Carp_1, MeanMiddleMan_Carp_1, MeanGate_Carp_1), digits = 0), # The mean selling prices
+  textinfo = "value+percent initial",
+  marker = list(color = c('rgb(160,160,160)', 'rgb(160,160,160)','rgb(160,160,160)','rgb(160,160,160)'))
+  ) %>%
+  add_trace(
+    type = 'funnel',
+  name = 'Other Catfish',
+  y = c("Consumer", "Retailer", "Middleman", "Farmer"), # The selling stages
+  x = round(c(MeanConsumer_OtherCat_1, MeanRetailer_OtherCat_1, MeanMiddleMan_OtherCat_1, MeanGate_OtherCat_1), digits = 0), # The mean selling prices
+  textinfo = "value+percent initial",
+  marker = list(color = c('rgb(200,200,200)', 'rgb(200,200,200)','rgb(200,200,200)','rgb(200,200,200)'))
+  ) %>%
+  layout(
+    title = "Pre COVID19",
+    legend = list(orientation = 'h', x = 0.5, xanchor = 'center', y = 0.01),
+    yaxis = list(categoryarray = c("Consumer", "Retailer", "Middleman", "Farmer")),
+    xaxis = list(categoryarray = c("Pangasius", "Tilapia", "Carp", "Other Catfish"))
+  )
+
+Funnel_PostCOVID <- plot_ly(
+  type = 'funnel',
+  name = 'Pangasius',
+  y = c("Consumer", "Retailer", "Middleman", "Farmer"), # The selling stages
+  x = round(c(MeanConsumer_Pang_2, MeanRetailer_Pang_2, MeanMiddleMan_Pang_2, MeanGate_Pang_2), digits = 0), # The mean selling prices
+  textinfo = "value+percent initial",
+  marker = list(color = c('rgb(80,80,80)', 'rgb(80,80,80)', 'rgb(80,80,80)', 'rgb(80,80,80)'))
+) %>%
+  add_trace(
+    type = 'funnel',
+  name = 'Tilapia',
+  y = c("Consumer", "Retailer", "Middleman", "Farmer"), # The selling stages
+  x = round(c(MeanConsumer_Tila_2, MeanRetailer_Tila_2, MeanMiddleMan_Tila_2, MeanGate_Tila_2), digits = 0), # The mean selling prices
+  textinfo = "value+percent initial",
+  marker = list(color = c('rgb(120,120,120)', 'rgb(120,120,120)', 'rgb(120,120,120)', 'rgb(120,120,120)'))
+  ) %>%
+  add_trace(
+    type = 'funnel',
+  name = 'Carp',
+  y = c("Consumer", "Retailer", "Middleman", "Farmer"), # The selling stages
+  x = round(c(MeanConsumer_Carp_2, MeanRetailer_Carp_2, MeanMiddleMan_Carp_2, MeanGate_Carp_2), digits = 0), # The mean selling prices
+  textinfo = "value+percent initial",
+  marker = list(color = c('rgb(160,160,160)', 'rgb(160,160,160)','rgb(160,160,160)','rgb(160,160,160)'))
+  ) %>%
+  add_trace(
+    type = 'funnel',
+  name = 'Other Catfish',
+  y = c("Consumer", "Retailer", "Middleman", "Farmer"), # The selling stages
+  x = round(c(MeanConsumer_OtherCat_2, MeanRetailer_OtherCat_2, MeanMiddleMan_OtherCat_2, MeanGate_OtherCat_2), digits = 0), # The mean selling prices
+  textinfo = "value+percent initial",
+  marker = list(color = c('rgb(200,200,200)', 'rgb(200,200,200)','rgb(200,200,200)','rgb(200,200,200)'))
+  ) %>%
+  layout(
+    title = "Funnel Plots",
+    showlegend = FALSE,
+    yaxis = list(categoryarray = c("Consumer", "Retailer", "Middleman", "Farmer")),
+    xaxis = list(categoryarray = c("Pangasius", "Tilapia", "Carp", "Other Catfish"))
+  )
+
+FunnelPlots <- subplot(Funnel_PreCOVID, Funnel_PostCOVID, shareY = TRUE, shareX = FALSE)
+```
+
+## Look at the production costs for the farmer
+
+### Feed prices
+
+``` {r Feed costs, include = FALSE}
+##############################################
+# Basic feed stats
+##############################################
+Mean_Feed_Pang_1 <- mean(RawData$FeedCOST_Pang_1, na.rm = TRUE)
+Mean_Feed_Pang_2 <- mean(RawData$FeedCOST_Pang_2, na.rm = TRUE)
+Mean_Feed_Tila_1 <- mean(RawData$FeedCOST_Tila_1, na.rm = TRUE)
+Mean_Feed_Tila_2 <- mean(RawData$FeedCOST_Tila_2, na.rm = TRUE)
+Mean_Feed_Carp_1 <- mean(RawData$FeedCOST_Carp_1, na.rm = TRUE)
+Mean_Feed_Carp_2 <- mean(RawData$FeedCOST_Carp_2, na.rm = TRUE)
+Mean_Feed_OtherCat_1 <- mean(RawData$FeedCOST_OtherCat_1, na.rm = TRUE)
+Mean_Feed_OtherCat_2 <- mean(RawData$FeedCOST_OtherCat_2, na.rm = TRUE)
+
+Std_Feed_Pang_1 <- sd(RawData$FeedCOST_Pang_1, na.rm = TRUE)
+Std_Feed_Pang_2 <- sd(RawData$FeedCOST_Pang_2, na.rm = TRUE)
+Std_Feed_Tila_1 <- sd(RawData$FeedCOST_Tila_1, na.rm = TRUE)
+Std_Feed_Tila_2 <- sd(RawData$FeedCOST_Tila_2, na.rm = TRUE)
+Std_Feed_Carp_1 <- sd(RawData$FeedCOST_Carp_1, na.rm = TRUE)
+Std_Feed_Carp_2 <- sd(RawData$FeedCOST_Carp_2, na.rm = TRUE)
+Std_Feed_OtherCat_1 <- sd(RawData$FeedCOST_OtherCat_1, na.rm = TRUE)
+Std_Feed_OtherCat_2 <- sd(RawData$FeedCOST_OtherCat_2, na.rm = TRUE)
+
+```
+
+### Differences in feed costs per kg
+
+The first production cost to be considered was the feed cost.
+
+Prior to covid19 the mean feed prices for fish were:  
+  
+ Pangasius: **`r Mean_Feed_Pang_1`** +/- **`r Std_Feed_Pang_1`**  
+ Tilapia: **`r Mean_Feed_Tila_1`** +/- **`r Std_Feed_Tila_1`**  
+ Carp: **`r Mean_Feed_Carp_1`** +/- **`r Std_Feed_Carp_1`**  
+ Other catfish: **`r Mean_Feed_OtherCat_1`** +/- **`r Std_Feed_OtherCat_1`**
+ 
+After covid19 the mean Consumer prices for fish were:  
+  
+ Pangasius: **`r Mean_Feed_Pang_2`** +/- **`r Std_Feed_Pang_2`**  
+ Tilapia: **`r Mean_Feed_Tila_2`** +/- **`r Std_Feed_Tila_2`**  
+ Carp: **`r Mean_Feed_Carp_2`** +/- **`r Std_Feed_Carp_2`**  
+ Other catfish: **`r Mean_Feed_OtherCat_2`** +/- **`r Std_Feed_OtherCat_2`**
+
+The percentage increase in prices were:  
+  Pangasius: **`r (Mean_Feed_Pang_2 - Mean_Feed_Pang_1) / Mean_Feed_Pang_2 * 100`**  
+  Tilapia: **`r (Mean_Feed_Tila_2 - Mean_Feed_Tila_1) / Mean_Feed_Tila_2 * 100`**  
+  Carp: **`r (Mean_Feed_Carp_2 - Mean_Feed_Carp_1) / Mean_Feed_Carp_2 * 100`**  
+  Other catfish: **`r (Mean_Feed_OtherCat_2 - Mean_Feed_OtherCat_1) / Mean_Feed_OtherCat_2 * 100`** 
+  
+The increase per kg on average in prices were:  
+  Pangasius: **`r (Mean_Feed_Pang_2 - Mean_Feed_Pang_1)`**  
+  Tilapia: **`r (Mean_Feed_Tila_2 - Mean_Feed_Tila_1)`**  
+  Carp: **`r (Mean_Feed_Carp_2 - Mean_Feed_Carp_1)`**  
+  Other catfish: **`r (Mean_Feed_OtherCat_2 - Mean_Feed_OtherCat_1)`** 
+  
+```{r Statistical analysis of significance of feed costs, include=FALSE}
+############################################################
+# Paired t-tests - all selling prices
+############################################################
+Pang_FEEDCOST_TTest <- t.test(RawData$FeedCOST_Pang_2,
+                          RawData$FeedCOST_Pang_1,
+                          alternative = "two.sided",
+                          paired = TRUE,
+                          na.action = na.omit,
+                          var.equal = TRUE)
+Tila_FEEDCOST_TTest <- t.test(RawData$FeedCOST_Tila_2,
+                          RawData$FeedCOST_Tila_1,
+                          alternative = "two.sided",
+                          paired = TRUE,
+                          na.action = na.omit,
+                          var.equal = TRUE)
+Carp_FEEDCOST_TTest <- t.test(RawData$FeedCOST_Carp_2,
+                          RawData$FeedCOST_Carp_1,
+                          alternative = "two.sided",
+                          paired = TRUE,
+                          na.action = na.omit,
+                          var.equal = TRUE)
+OtherCat_FEEDCOST_TTest <- t.test(RawData$FeedCOST_OtherCat_2,
+                          RawData$FeedCOST_OtherCat_1,
+                          alternative = "two.sided",
+                          paired = TRUE,
+                          na.action = na.omit,
+                          var.equal = TRUE)
+```
+
+### Statistical significance in changes in feed costs
+
+
+To test if differences in prices were statistically significant a pairwise Student's T-test was performed on the data with two-tails.
+
+For pangasius Market prices:  
+        P-value: **`r Pang_FEEDCOST_TTest$p.value`**  
+        Test Statistic: **`r Pang_FEEDCOST_TTest$statistic`**  
+        Degrees of Freedom: **`r Pang_FEEDCOST_TTest$parameter`**  
+        Estimated difference in means: **`r Pang_FEEDCOST_TTest$estimate`**  
+
+For tilapia Market prices:  
+        P-value: **`r Tila_FEEDCOST_TTest$p.value`**  
+        Test Statistic: **`r Tila_FEEDCOST_TTest$statistic`**  
+        Degrees of Freedom: **`r Tila_FEEDCOST_TTest$parameter`**  
+        Estimated difference in means: **`r Tila_FEEDCOST_TTest$estimate`**  
         
+For carp Market prices:  
+        P-value: **`r Carp_FEEDCOST_TTest$p.value`**  
+        Test Statistic: **`r Carp_FEEDCOST_TTest$statistic`**  
+        Degrees of Freedom: **`r Carp_FEEDCOST_TTest$parameter`**  
+        Estimated difference in means: **`r Carp_FEEDCOST_TTest$estimate`**  
+        
+For other catfish Market prices:  
+        P-value: **`r OtherCat_FEEDCOST_TTest$p.value`**  
+        Test Statistic: **`r OtherCat_FEEDCOST_TTest$statistic`**  
+        Degrees of Freedom: **`r OtherCat_FEEDCOST_TTest$parameter`**  
+        Estimated difference in means: **`r OtherCat_FEEDCOST_TTest$estimate`** 
+        
+```{r Feed cost changes, include=FALSE}
+#############################################################
+# Plot comparisons of prices pre and piost covid
+#############################################################
+############################################################
+# Single plots to create a subplot
+###########################################################
+PreMarker = 'square-open'
+PostMarker = 'circle'
+PreMarkerColor = 'rgb(0,0,0)'
+PostMarkerColor = 'rgb(0,0,0)'
+SegmentLineColor = 'rgb(50,50,50)'
+
+SingleTotalLabDumbbellPlot_PANG_FEED <- plot_ly(data = RawData, type = 'scatter', mode = 'markers') %>%
+  add_segments(x = ~FeedCOST_Pang_2, xend = ~FeedCOST_Pang_1, y = ~FarmNumber, yend = ~FarmNumber, 
+               showlegend = FALSE,
+               name = 'Pangasius',
+               line = list(color = SegmentLineColor)) %>%
+  add_markers(x = ~FeedCOST_Pang_1,
+              y = ~FarmNumber,
+              name = "Pre-Covid",
+              showlegend = TRUE,
+              marker = list(symbol = PreMarker,
+                            size = MarkerSize, 
+                          color = PreMarkerColor,
+                          line = list(color = 'rgb(0,0,0)'),
+                          sizemode = 'diameter', opacity = 0.5)) %>%
+  add_markers(name = 'Post-Covid',
+            showlegend = TRUE,
+              x = ~FeedCOST_Pang_2,
+            y = ~FarmNumber,
+            marker = list(symbol = PostMarker,
+                          size = MarkerSize, 
+                          color = PostMarkerColor,
+                          line = list(color = 'rgb(0,0,0)'),
+                          sizemode = 'diameter', opacity = 0.5)) %>%
+  layout(
+    shapes = list(
+      list(type = 'line', layer = 'bottom', 
+                  y0 = 0, y1 = 41,
+                  x0 = Mean_Feed_Pang_1, x1 = Mean_Feed_Pang_1,
+                  line = list(color = 'rgb(200,200,200)', dash = 'dot', width = 0.5)),
+      list(type = 'line', layer = 'bottom', 
+                  y0 = 0, y1 = 41,
+                  x0 = Mean_Feed_Pang_2, x1 = Mean_Feed_Pang_2,
+                  line = list(color = 'rgb(50,50,50)', dash = 'dot', width = 0.5))
+      ),
+    xaxis = list(title = "Pangasius<br>Feed Cost (BDT/kg)",
+                 range = c(30,50), showline = TRUE, showgrid = FALSE),
+    yaxis = list(title = "Farm",showticklabels = FALSE,
+                 range = c(0,41), showline = TRUE, showgrid = FALSE)
+  )
+
+SingleTotalLabDumbbellPlot_TILA_FEED <- plot_ly(data = RawData, type = 'scatter', mode = 'markers') %>%
+  add_segments(x = ~FeedCOST_Tila_2, xend = ~FeedCOST_Tila_1, y = ~FarmNumber, yend = ~FarmNumber, 
+               showlegend = FALSE,
+               name = 'Tilapia',
+               line = list(color = SegmentLineColor)) %>%
+  add_markers(x = ~FeedCOST_Tila_1,
+              y = ~FarmNumber,
+              name = "Pre-Covid",
+              showlegend = FALSE,
+              marker = list(symbol = PreMarker,
+                            size = MarkerSize, 
+                          color = PreMarkerColor,
+                          line = list(color = 'rgb(0,0,0)'),
+                          sizemode = 'diameter', opacity = 0.5)) %>%
+  add_markers(name = 'Post-Covid',
+            showlegend = FALSE,
+              x = ~FeedCOST_Tila_2,
+            y = ~FarmNumber,
+            marker = list(symbol = PostMarker,
+                          size = MarkerSize, 
+                          color = PostMarkerColor,
+                          line = list(color = 'rgb(0,0,0)'),
+                          sizemode = 'diameter', opacity = 0.5)) %>%
+  layout(
+    shapes = list(
+      list(type = 'line', layer = 'bottom', 
+                  y0 = 0, y1 = 41,
+                  x0 = Mean_Feed_Tila_1, x1 = Mean_Feed_Tila_1,
+                  line = list(color = 'rgb(200,200,200)', dash = 'dot', width = 0.5)),
+      list(type = 'line', layer = 'bottom', 
+                  y0 = 0, y1 = 41,
+                  x0 = Mean_Feed_Tila_2, x1 = Mean_Feed_Tila_2,
+                  line = list(color = 'rgb(50,50,50)', dash = 'dot', width = 0.5))
+      ),
+    xaxis = list(title = "Tilapia<br>Feed Cost (BDT/kg)",
+                 range = c(30,50), showline = TRUE, showgrid = FALSE),
+    yaxis = list(title = "Farm",showticklabels = FALSE,
+                 range = c(0,41), showline = TRUE, showgrid = FALSE)
+  )
+
+SingleTotalLabDumbbellPlot_CARP_FEED <- plot_ly(data = RawData, type = 'scatter', mode = 'markers') %>%
+  add_segments(x = ~FeedCOST_Carp_2, xend = ~FeedCOST_Carp_1, y = ~FarmNumber, yend = ~FarmNumber, 
+               showlegend = FALSE,
+               name = 'Tilapia',
+               line = list(color = SegmentLineColor)) %>%
+  add_markers(x = ~FeedCOST_Carp_1,
+              y = ~FarmNumber,
+              name = "Pre-Covid",
+              showlegend = FALSE,
+              marker = list(symbol = PreMarker,
+                            size = MarkerSize, 
+                          color = PreMarkerColor,
+                          line = list(color = 'rgb(0,0,0)'),
+                          sizemode = 'diameter', opacity = 0.5)) %>%
+  add_markers(name = 'Post-Covid',
+            showlegend = FALSE,
+              x = ~FeedCOST_Carp_2,
+            y = ~FarmNumber,
+            marker = list(symbol = PostMarker,
+                          size = MarkerSize, 
+                          color = PostMarkerColor,
+                          line = list(color = 'rgb(0,0,0)'),
+                          sizemode = 'diameter', opacity = 0.5)) %>%
+  layout(
+    shapes = list(
+      list(type = 'line', layer = 'bottom', 
+                  y0 = 0, y1 = 41,
+                  x0 = Mean_Feed_Carp_1, x1 = Mean_Feed_Carp_1,
+                  line = list(color = 'rgb(200,200,200)', dash = 'dot', width = 0.5)),
+      list(type = 'line', layer = 'bottom', 
+                  y0 = 0, y1 = 41,
+                  x0 = Mean_Feed_Carp_2, x1 = Mean_Feed_Carp_2,
+                  line = list(color = 'rgb(50,50,50)', dash = 'dot', width = 0.5))
+      ),
+    xaxis = list(title = "Carp<br>Feed Cost (BDT/kg)",
+                 range = c(20,45), showline = TRUE, showgrid = FALSE),
+    yaxis = list(title = "Farm",showticklabels = FALSE,
+                 range = c(0,41), showline = TRUE, showgrid = FALSE)
+  )
+
+SingleTotalLabDumbbellPlot_OTHERCAT_FEED <- plot_ly(data = RawData, type = 'scatter', mode = 'markers') %>%
+  add_segments(x = ~FeedCOST_OtherCat_2, xend = ~FeedCOST_OtherCat_1, y = ~FarmNumber, yend = ~FarmNumber, 
+               showlegend = FALSE,
+               name = 'OtherCatfish',
+               line = list(color = SegmentLineColor)) %>%
+  add_markers(x = ~FeedCOST_OtherCat_1,
+              y = ~FarmNumber,
+              name = "Pre-Covid",
+              showlegend = FALSE,
+              marker = list(symbol = PreMarker,
+                            size = MarkerSize, 
+                          color = PreMarkerColor,
+                          line = list(color = 'rgb(0,0,0)'),
+                          sizemode = 'diameter', opacity = 0.5)) %>%
+  add_markers(name = 'Post-Covid',
+            showlegend = FALSE,
+              x = ~FeedCOST_OtherCat_2,
+            y = ~FarmNumber,
+            marker = list(symbol = PostMarker,
+                          size = MarkerSize, 
+                          color = PostMarkerColor,
+                          line = list(color = 'rgb(0,0,0)'),
+                          sizemode = 'diameter', opacity = 0.5)) %>%
+  layout(
+    shapes = list(
+      list(type = 'line', layer = 'bottom', 
+                  y0 = 0, y1 = 41,
+                  x0 = Mean_Feed_OtherCat_1, x1 = Mean_Feed_OtherCat_1,
+                  line = list(color = 'rgb(200,200,200)', dash = 'dot', width = 0.5)),
+      list(type = 'line', layer = 'bottom', 
+                  y0 = 0, y1 = 41,
+                  x0 = Mean_Feed_OtherCat_2, x1 = Mean_Feed_OtherCat_2,
+                  line = list(color = 'rgb(50,50,50)', dash = 'dot', width = 0.5))
+      ),
+    xaxis = list(title = "Other Catfish<br>Feed Cost (BDT/kg)",
+                 range = c(40,70), showline = TRUE, showgrid = FALSE),
+    yaxis = list(title = "Farm",showticklabels = FALSE,
+                 range = c(0,41), showline = TRUE, showgrid = FALSE)
+  )
+
+SingleTotalLabDumbbellPlot_FEED_Subplot <- subplot(SingleTotalLabDumbbellPlot_PANG_FEED,
+                                              SingleTotalLabDumbbellPlot_TILA_FEED,
+                                              SingleTotalLabDumbbellPlot_CARP_FEED,
+                                              SingleTotalLabDumbbellPlot_OTHERCAT_FEED,
+                                              titleX = TRUE, titleY = TRUE, shareY = TRUE,
+                                              margin = 0.05)
+```
+
+### Dumbbell plot of feed prices
+
+`r SingleTotalLabDumbbellPlot_FEED_Subplot`
+
+### Costs of medicines
+
+``` {r Medicine costs, include = FALSE}
+##############################################
+# Basic medicine stats
+##############################################
+Mean_Medicine_Pang_1 <- mean(RawData$PharmCOST_Pang_1, na.rm = TRUE)
+Mean_Medicine_Pang_2 <- mean(RawData$PharmCOST_Pang_2, na.rm = TRUE)
+Mean_Medicine_Tila_1 <- mean(RawData$PharmCOST_Tila_1, na.rm = TRUE)
+Mean_Medicine_Tila_2 <- mean(RawData$PharmCOST_Tila_2, na.rm = TRUE)
+Mean_Medicine_Carp_1 <- mean(RawData$PharmCOST_Carp_1, na.rm = TRUE)
+Mean_Medicine_Carp_2 <- mean(RawData$PharmCOST_Carp_2, na.rm = TRUE)
+Mean_Medicine_OtherCat_1 <- mean(RawData$PharmCOST_OtherCat_1, na.rm = TRUE)
+Mean_Medicine_OtherCat_2 <- mean(RawData$PharmCOST_OtherCat_2, na.rm = TRUE)
+
+Std_Medicine_Pang_1 <- sd(RawData$PharmCOST_Pang_1, na.rm = TRUE)
+Std_Medicine_Pang_2 <- sd(RawData$PharmCOST_Pang_2, na.rm = TRUE)
+Std_Medicine_Tila_1 <- sd(RawData$PharmCOST_Tila_1, na.rm = TRUE)
+Std_Medicine_Tila_2 <- sd(RawData$PharmCOST_Tila_2, na.rm = TRUE)
+Std_Medicine_Carp_1 <- sd(RawData$PharmCOST_Carp_1, na.rm = TRUE)
+Std_Medicine_Carp_2 <- sd(RawData$PharmCOST_Carp_2, na.rm = TRUE)
+Std_Medicine_OtherCat_1 <- sd(RawData$PharmCOST_OtherCat_1, na.rm = TRUE)
+Std_Medicine_OtherCat_2 <- sd(RawData$PharmCOST_OtherCat_2, na.rm = TRUE)
+
+```
+
+### Differences in medicine costs per ha
+
+The second production cost to be considered was the medicine cost.
+
+Prior to covid19 the mean medicine prices for fish were:  
+  
+ Pangasius: **`r Mean_Medicine_Pang_1`** +/- **`r Std_Medicine_Pang_1`**  
+ Tilapia: **`r Mean_Medicine_Tila_1`** +/- **`r Std_Medicine_Tila_1`**  
+ Carp: **`r Mean_Medicine_Carp_1`** +/- **`r Std_Medicine_Carp_1`**  
+ Other catfish: **`r Mean_Medicine_OtherCat_1`** +/- **`r Std_Medicine_OtherCat_1`**
+ 
+After covid19 the mean medicine prices for fish were:  
+  
+ Pangasius: **`r Mean_Medicine_Pang_2`** +/- **`r Std_Medicine_Pang_2`**  
+ Tilapia: **`r Mean_Medicine_Tila_2`** +/- **`r Std_Medicine_Tila_2`**  
+ Carp: **`r Mean_Medicine_Carp_2`** +/- **`r Std_Medicine_Carp_2`**  
+ Other catfish: **`r Mean_Medicine_OtherCat_2`** +/- **`r Std_Medicine_OtherCat_2`**
+
+The percentage increase in prices were:  
+  Pangasius: **`r (Mean_Medicine_Pang_2 - Mean_Medicine_Pang_1) / Mean_Medicine_Pang_2 * 100`**  
+  Tilapia: **`r (Mean_Medicine_Tila_2 - Mean_Medicine_Tila_1) / Mean_Medicine_Tila_2 * 100`**  
+  Carp: **`r (Mean_Medicine_Carp_2 - Mean_Medicine_Carp_1) / Mean_Medicine_Carp_2 * 100`**  
+  Other catfish: **`r (Mean_Medicine_OtherCat_2 - Mean_Medicine_OtherCat_1) / Mean_Medicine_OtherCat_2 * 100`** 
+  
+The increase per kg on average in prices were:  
+  Pangasius: **`r (Mean_Medicine_Pang_2 - Mean_Medicine_Pang_1)`**  
+  Tilapia: **`r (Mean_Medicine_Tila_2 - Mean_Medicine_Tila_1)`**  
+  Carp: **`r (Mean_Medicine_Carp_2 - Mean_Medicine_Carp_1)`**  
+  Other catfish: **`r (Mean_Medicine_OtherCat_2 - Mean_Medicine_OtherCat_1)`** 
+  
+```{r Statistical analysis of significance of medicine costs, include=FALSE}
+############################################################
+# Paired t-tests - all selling prices
+############################################################
+Pang_PHARMCOST_TTest <- t.test(RawData$PharmCOST_Pang_2,
+                          RawData$PharmCOST_Pang_1,
+                          alternative = "two.sided",
+                          paired = TRUE,
+                          na.action = na.omit,
+                          var.equal = TRUE)
+Tila_PHARMCOST_TTest <- t.test(RawData$PharmCOST_Tila_2,
+                          RawData$PharmCOST_Tila_1,
+                          alternative = "two.sided",
+                          paired = TRUE,
+                          na.action = na.omit,
+                          var.equal = TRUE)
+Carp_PHARMCOST_TTest <- t.test(RawData$PharmCOST_Carp_2,
+                          RawData$PharmCOST_Carp_1,
+                          alternative = "two.sided",
+                          paired = TRUE,
+                          na.action = na.omit,
+                          var.equal = TRUE)
+OtherCat_PHARMCOST_TTest <- t.test(RawData$PharmCOST_OtherCat_2,
+                          RawData$PharmCOST_OtherCat_1,
+                          alternative = "two.sided",
+                          paired = TRUE,
+                          na.action = na.omit,
+                          var.equal = TRUE)
+```
+
+### Statistical significance in changes in medicine costs
+
+
+To test if differences in prices were statistically significant a pairwise Student's T-test was performed on the data with two-tails.
+
+For pangasius Market prices:  
+        P-value: **`r Pang_PHARMCOST_TTest$p.value`**  
+        Test Statistic: **`r Pang_PHARMCOST_TTest$statistic`**  
+        Degrees of Freedom: **`r Pang_PHARMCOST_TTest$parameter`**  
+        Estimated difference in means: **`r Pang_PHARMCOST_TTest$estimate`**  
+
+For tilapia Market prices:  
+        P-value: **`r Tila_PHARMCOST_TTest$p.value`**  
+        Test Statistic: **`r Tila_PHARMCOST_TTest$statistic`**  
+        Degrees of Freedom: **`r Tila_PHARMCOST_TTest$parameter`**  
+        Estimated difference in means: **`r Tila_PHARMCOST_TTest$estimate`**  
+        
+For carp Market prices:  
+        P-value: **`r Carp_PHARMCOST_TTest$p.value`**  
+        Test Statistic: **`r Carp_PHARMCOST_TTest$statistic`**  
+        Degrees of Freedom: **`r Carp_PHARMCOST_TTest$parameter`**  
+        Estimated difference in means: **`r Carp_PHARMCOST_TTest$estimate`**  
+        
+For other catfish Market prices:  
+        P-value: **`r OtherCat_PHARMCOST_TTest$p.value`**  
+        Test Statistic: **`r OtherCat_PHARMCOST_TTest$statistic`**  
+        Degrees of Freedom: **`r OtherCat_PHARMCOST_TTest$parameter`**  
+        Estimated difference in means: **`r OtherCat_PHARMCOST_TTest$estimate`** 
+        
+```{r Medicine cost changes, include=FALSE}
+#############################################################
+# Plot comparisons of prices pre and piost covid
+#############################################################
+############################################################
+# Single plots to create a subplot
+###########################################################
+PreMarker = 'square-open'
+PostMarker = 'circle'
+PreMarkerColor = 'rgb(0,0,0)'
+PostMarkerColor = 'rgb(0,0,0)'
+SegmentLineColor = 'rgb(50,50,50)'
+
+SingleTotalLabDumbbellPlot_PANG_MEDICINE <- plot_ly(data = RawData, type = 'scatter', mode = 'markers') %>%
+  add_segments(x = ~PharmCOST_Pang_2, xend = ~PharmCOST_Pang_1, y = ~FarmNumber, yend = ~FarmNumber, 
+               showlegend = FALSE,
+               name = 'Pangasius',
+               line = list(color = SegmentLineColor)) %>%
+  add_markers(x = ~PharmCOST_Pang_1,
+              y = ~FarmNumber,
+              name = "Pre-Covid",
+              showlegend = TRUE,
+              marker = list(symbol = PreMarker,
+                            size = MarkerSize, 
+                          color = PreMarkerColor,
+                          line = list(color = 'rgb(0,0,0)'),
+                          sizemode = 'diameter', opacity = 0.5)) %>%
+  add_markers(name = 'Post-Covid',
+            showlegend = TRUE,
+              x = ~PharmCOST_Pang_2,
+            y = ~FarmNumber,
+            marker = list(symbol = PostMarker,
+                          size = MarkerSize, 
+                          color = PostMarkerColor,
+                          line = list(color = 'rgb(0,0,0)'),
+                          sizemode = 'diameter', opacity = 0.5)) %>%
+  layout(
+    shapes = list(
+      list(type = 'line', layer = 'bottom', 
+                  y0 = 0, y1 = 41,
+                  x0 = Mean_Medicine_Pang_1, x1 = Mean_Medicine_Pang_1,
+                  line = list(color = 'rgb(200,200,200)', dash = 'dot', width = 0.5)),
+      list(type = 'line', layer = 'bottom', 
+                  y0 = 0, y1 = 41,
+                  x0 = Mean_Medicine_Pang_2, x1 = Mean_Medicine_Pang_2,
+                  line = list(color = 'rgb(50,50,50)', dash = 'dot', width = 0.5))
+      ),
+    xaxis = list(title = "Pangasius<br>Medicines Cost (BDT/ha)",
+                 range = c(5000,30000), showline = TRUE, showgrid = FALSE),
+    yaxis = list(title = "Farm",showticklabels = FALSE,
+                 range = c(0,41), showline = TRUE, showgrid = FALSE)
+  )
+
+SingleTotalLabDumbbellPlot_TILA_MEDICINE <- plot_ly(data = RawData, type = 'scatter', mode = 'markers') %>%
+  add_segments(x = ~PharmCOST_Tila_2, xend = ~PharmCOST_Tila_1, y = ~FarmNumber, yend = ~FarmNumber, 
+               showlegend = FALSE,
+               name = 'Tilapia',
+               line = list(color = SegmentLineColor)) %>%
+  add_markers(x = ~PharmCOST_Tila_1,
+              y = ~FarmNumber,
+              name = "Pre-Covid",
+              showlegend = FALSE,
+              marker = list(symbol = PreMarker,
+                            size = MarkerSize, 
+                          color = PreMarkerColor,
+                          line = list(color = 'rgb(0,0,0)'),
+                          sizemode = 'diameter', opacity = 0.5)) %>%
+  add_markers(name = 'Post-Covid',
+            showlegend = FALSE,
+              x = ~PharmCOST_Tila_2,
+            y = ~FarmNumber,
+            marker = list(symbol = PostMarker,
+                          size = MarkerSize, 
+                          color = PostMarkerColor,
+                          line = list(color = 'rgb(0,0,0)'),
+                          sizemode = 'diameter', opacity = 0.5)) %>%
+  layout(
+    shapes = list(
+      list(type = 'line', layer = 'bottom', 
+                  y0 = 0, y1 = 41,
+                  x0 = Mean_Medicine_Tila_1, x1 = Mean_Medicine_Tila_1,
+                  line = list(color = 'rgb(200,200,200)', dash = 'dot', width = 0.5)),
+      list(type = 'line', layer = 'bottom', 
+                  y0 = 0, y1 = 41,
+                  x0 = Mean_Medicine_Tila_2, x1 = Mean_Medicine_Tila_2,
+                  line = list(color = 'rgb(50,50,50)', dash = 'dot', width = 0.5))
+      ),
+    xaxis = list(title = "Tilapia<br>Medicines Cost (BDT/ha)",
+                 range = c(10000,40000), showline = TRUE, showgrid = FALSE),
+    yaxis = list(title = "Farm",showticklabels = FALSE,
+                 range = c(0,41), showline = TRUE, showgrid = FALSE)
+  )
+
+SingleTotalLabDumbbellPlot_CARP_MEDICINE <- plot_ly(data = RawData, type = 'scatter', mode = 'markers') %>%
+  add_segments(x = ~PharmCOST_Carp_2, xend = ~PharmCOST_Carp_1, y = ~FarmNumber, yend = ~FarmNumber, 
+               showlegend = FALSE,
+               name = 'Tilapia',
+               line = list(color = SegmentLineColor)) %>%
+  add_markers(x = ~PharmCOST_Carp_1,
+              y = ~FarmNumber,
+              name = "Pre-Covid",
+              showlegend = FALSE,
+              marker = list(symbol = PreMarker,
+                            size = MarkerSize, 
+                          color = PreMarkerColor,
+                          line = list(color = 'rgb(0,0,0)'),
+                          sizemode = 'diameter', opacity = 0.5)) %>%
+  add_markers(name = 'Post-Covid',
+            showlegend = FALSE,
+              x = ~PharmCOST_Carp_2,
+            y = ~FarmNumber,
+            marker = list(symbol = PostMarker,
+                          size = MarkerSize, 
+                          color = PostMarkerColor,
+                          line = list(color = 'rgb(0,0,0)'),
+                          sizemode = 'diameter', opacity = 0.5)) %>%
+  layout(
+    shapes = list(
+      list(type = 'line', layer = 'bottom', 
+                  y0 = 0, y1 = 41,
+                  x0 = Mean_Medicine_Carp_1, x1 = Mean_Medicine_Carp_1,
+                  line = list(color = 'rgb(200,200,200)', dash = 'dot', width = 0.5)),
+      list(type = 'line', layer = 'bottom', 
+                  y0 = 0, y1 = 41,
+                  x0 = Mean_Medicine_Carp_2, x1 = Mean_Medicine_Carp_2,
+                  line = list(color = 'rgb(50,50,50)', dash = 'dot', width = 0.5))
+      ),
+    xaxis = list(title = "Carp<br>Medicines Cost (BDT/ha)",
+                 range = c(15000,65000), showline = TRUE, showgrid = FALSE),
+    yaxis = list(title = "Farm",showticklabels = FALSE,
+                 range = c(0,41), showline = TRUE, showgrid = FALSE)
+  )
+
+SingleTotalLabDumbbellPlot_OTHERCAT_MEDICINE <- plot_ly(data = RawData, type = 'scatter', mode = 'markers') %>%
+  add_segments(x = ~PharmCOST_OtherCat_2, xend = ~PharmCOST_OtherCat_1, y = ~FarmNumber, yend = ~FarmNumber, 
+               showlegend = FALSE,
+               name = 'OtherCatfish',
+               line = list(color = SegmentLineColor)) %>%
+  add_markers(x = ~PharmCOST_OtherCat_1,
+              y = ~FarmNumber,
+              name = "Pre-Covid",
+              showlegend = FALSE,
+              marker = list(symbol = PreMarker,
+                            size = MarkerSize, 
+                          color = PreMarkerColor,
+                          line = list(color = 'rgb(0,0,0)'),
+                          sizemode = 'diameter', opacity = 0.5)) %>%
+  add_markers(name = 'Post-Covid',
+            showlegend = FALSE,
+              x = ~PharmCOST_OtherCat_2,
+            y = ~FarmNumber,
+            marker = list(symbol = PostMarker,
+                          size = MarkerSize, 
+                          color = PostMarkerColor,
+                          line = list(color = 'rgb(0,0,0)'),
+                          sizemode = 'diameter', opacity = 0.5)) %>%
+  layout(
+    shapes = list(
+      list(type = 'line', layer = 'bottom', 
+                  y0 = 0, y1 = 41,
+                  x0 = Mean_Medicine_OtherCat_1, x1 = Mean_Medicine_OtherCat_1,
+                  line = list(color = 'rgb(200,200,200)', dash = 'dot', width = 0.5)),
+      list(type = 'line', layer = 'bottom', 
+                  y0 = 0, y1 = 41,
+                  x0 = Mean_Medicine_OtherCat_2, x1 = Mean_Medicine_OtherCat_2,
+                  line = list(color = 'rgb(50,50,50)', dash = 'dot', width = 0.5))
+      ),
+    xaxis = list(title = "Other Catfish<br>Medicines Cost (BDT/ha)",
+                 range = c(25000,65000), showline = TRUE, showgrid = FALSE),
+    yaxis = list(title = "Farm",showticklabels = FALSE,
+                 range = c(0,41), showline = TRUE, showgrid = FALSE)
+  )
+
+SingleTotalLabDumbbellPlot_MEDICINE_Subplot <- subplot(SingleTotalLabDumbbellPlot_PANG_MEDICINE,
+                                              SingleTotalLabDumbbellPlot_TILA_MEDICINE,
+                                              SingleTotalLabDumbbellPlot_CARP_MEDICINE,
+                                              SingleTotalLabDumbbellPlot_OTHERCAT_MEDICINE,
+                                              titleX = TRUE, titleY = TRUE, shareY = TRUE,
+                                              margin = 0.05)
+```
+
+### Dumbbell plot of medical supply prices per hectare
+
+`r SingleTotalLabDumbbellPlot_MEDICINE_Subplot`
+
+``` {r Total Production costs, include = FALSE}
+##############################################
+# Basic feed stats
+##############################################
+Mean_Prod_Pang_1 <- mean(RawData$ProdCOST_Pang_1, na.rm = TRUE)
+Mean_Prod_Pang_2 <- mean(RawData$ProdCOST_Pang_2, na.rm = TRUE)
+Mean_Prod_Tila_1 <- mean(RawData$ProdCOST_Tila_1, na.rm = TRUE)
+Mean_Prod_Tila_2 <- mean(RawData$ProdCOST_Tila_2, na.rm = TRUE)
+Mean_Prod_Carp_1 <- mean(RawData$ProdCOST_Carp_1, na.rm = TRUE)
+Mean_Prod_Carp_2 <- mean(RawData$ProdCOST_Carp_2, na.rm = TRUE)
+Mean_Prod_OtherCat_1 <- mean(RawData$ProdCOST_OtherCat_1, na.rm = TRUE)
+Mean_Prod_OtherCat_2 <- mean(RawData$ProdCOST_OtherCat_2, na.rm = TRUE)
+
+Std_Prod_Pang_1 <- sd(RawData$ProdCOST_Pang_1, na.rm = TRUE)
+Std_Prod_Pang_2 <- sd(RawData$ProdCOST_Pang_2, na.rm = TRUE)
+Std_Prod_Tila_1 <- sd(RawData$ProdCOST_Tila_1, na.rm = TRUE)
+Std_Prod_Tila_2 <- sd(RawData$ProdCOST_Tila_2, na.rm = TRUE)
+Std_Prod_Carp_1 <- sd(RawData$ProdCOST_Carp_1, na.rm = TRUE)
+Std_Prod_Carp_2 <- sd(RawData$ProdCOST_Carp_2, na.rm = TRUE)
+Std_Prod_OtherCat_1 <- sd(RawData$ProdCOST_OtherCat_1, na.rm = TRUE)
+Std_Prod_OtherCat_2 <- sd(RawData$ProdCOST_OtherCat_2, na.rm = TRUE)
+
+```
+
+### Differences in total production costs per kg
+
+The next production cost to be considered was the total production cost. this has been confirmed to include feed and medicines.
+
+Prior to covid19 the mean total production prices for fish were:  
+  
+ Pangasius: **`r Mean_Prod_Pang_1`** +/- **`r Std_Prod_Pang_1`**  
+ Tilapia: **`r Mean_Prod_Tila_1`** +/- **`r Std_Prod_Tila_1`**  
+ Carp: **`r Mean_Prod_Carp_1`** +/- **`r Std_Prod_Carp_1`**  
+ Other catfish: **`r Mean_Prod_OtherCat_1`** +/- **`r Std_Prod_OtherCat_1`**
+ 
+After covid19 the mean total production prices for fish were:  
+  
+ Pangasius: **`r Mean_Prod_Pang_2`** +/- **`r Std_Prod_Pang_2`**  
+ Tilapia: **`r Mean_Prod_Tila_2`** +/- **`r Std_Prod_Tila_2`**  
+ Carp: **`r Mean_Prod_Carp_2`** +/- **`r Std_Prod_Carp_2`**  
+ Other catfish: **`r Mean_Prod_OtherCat_2`** +/- **`r Std_Prod_OtherCat_2`**
+
+The percentage increase in prices were:  
+  Pangasius: **`r (Mean_Prod_Pang_2 - Mean_Prod_Pang_1) / Mean_Prod_Pang_2 * 100`**  
+  Tilapia: **`r (Mean_Prod_Tila_2 - Mean_Prod_Tila_1) / Mean_Prod_Tila_2 * 100`**  
+  Carp: **`r (Mean_Prod_Carp_2 - Mean_Prod_Carp_1) / Mean_Prod_Carp_2 * 100`**  
+  Other catfish: **`r (Mean_Prod_OtherCat_2 - Mean_Prod_OtherCat_1) / Mean_Prod_OtherCat_2 * 100`** 
+  
+The increase per kg on average in prices were:  
+  Pangasius: **`r (Mean_Prod_Pang_2 - Mean_Prod_Pang_1)`**  
+  Tilapia: **`r (Mean_Prod_Tila_2 - Mean_Prod_Tila_1)`**  
+  Carp: **`r (Mean_Prod_Carp_2 - Mean_Prod_Carp_1)`**  
+  Other catfish: **`r (Mean_Prod_OtherCat_2 - Mean_Prod_OtherCat_1)`** 
+  
+```{r Statistical analysis of significance of total production costs, include=FALSE}
+############################################################
+# Paired t-tests - all selling prices
+############################################################
+Pang_PRODCOST_TTest <- t.test(RawData$ProdCOST_Pang_2,
+                          RawData$ProdCOST_Pang_1,
+                          alternative = "two.sided",
+                          paired = TRUE,
+                          na.action = na.omit,
+                          var.equal = TRUE)
+Tila_PRODCOST_TTest <- t.test(RawData$ProdCOST_Tila_2,
+                          RawData$ProdCOST_Tila_1,
+                          alternative = "two.sided",
+                          paired = TRUE,
+                          na.action = na.omit,
+                          var.equal = TRUE)
+Carp_PRODCOST_TTest <- t.test(RawData$ProdCOST_Carp_2,
+                          RawData$ProdCOST_Carp_1,
+                          alternative = "two.sided",
+                          paired = TRUE,
+                          na.action = na.omit,
+                          var.equal = TRUE)
+OtherCat_PRODCOST_TTest <- t.test(RawData$ProdCOST_OtherCat_2,
+                          RawData$ProdCOST_OtherCat_1,
+                          alternative = "two.sided",
+                          paired = TRUE,
+                          na.action = na.omit,
+                          var.equal = TRUE)
+```
+
+### Statistical significance in changes in total production costs
+
+
+To test if differences in prices were statistically significant a pairwise Student's T-test was performed on the data with two-tails.
+
+For pangasius Market prices:  
+        P-value: **`r Pang_PRODCOST_TTest$p.value`**  
+        Test Statistic: **`r Pang_PRODCOST_TTest$statistic`**  
+        Degrees of Freedom: **`r Pang_PRODCOST_TTest$parameter`**  
+        Estimated difference in means: **`r Pang_PRODCOST_TTest$estimate`**  
+
+For tilapia Market prices:  
+        P-value: **`r Tila_PRODCOST_TTest$p.value`**  
+        Test Statistic: **`r Tila_PRODCOST_TTest$statistic`**  
+        Degrees of Freedom: **`r Tila_PRODCOST_TTest$parameter`**  
+        Estimated difference in means: **`r Tila_PRODCOST_TTest$estimate`**  
+        
+For carp Market prices:  
+        P-value: **`r Carp_PRODCOST_TTest$p.value`**  
+        Test Statistic: **`r Carp_PRODCOST_TTest$statistic`**  
+        Degrees of Freedom: **`r Carp_PRODCOST_TTest$parameter`**  
+        Estimated difference in means: **`r Carp_PRODCOST_TTest$estimate`**  
+        
+For other catfish Market prices:  
+        P-value: **`r OtherCat_PRODCOST_TTest$p.value`**  
+        Test Statistic: **`r OtherCat_PRODCOST_TTest$statistic`**  
+        Degrees of Freedom: **`r OtherCat_PRODCOST_TTest$parameter`**  
+        Estimated difference in means: **`r OtherCat_PRODCOST_TTest$estimate`** 
+        
+```{r Total Production cost changes, include=FALSE}
+#############################################################
+# Plot comparisons of total production cost pre and post covid
+#############################################################
+############################################################
+# Single plots to create a subplot
+###########################################################
+PreMarker = 'square-open'
+PostMarker = 'circle'
+PreMarkerColor = 'rgb(0,0,0)'
+PostMarkerColor = 'rgb(0,0,0)'
+SegmentLineColor = 'rgb(50,50,50)'
+
+SingleTotalLabDumbbellPlot_PANG_PROD <- plot_ly(data = RawData, type = 'scatter', mode = 'markers') %>%
+  add_segments(x = ~ProdCOST_Pang_2, xend = ~ProdCOST_Pang_1, y = ~FarmNumber, yend = ~FarmNumber, 
+               showlegend = FALSE,
+               name = 'Pangasius',
+               line = list(color = SegmentLineColor)) %>%
+  add_markers(x = ~ProdCOST_Pang_1,
+              y = ~FarmNumber,
+              name = "Pre-Covid",
+              showlegend = TRUE,
+              marker = list(symbol = PreMarker,
+                            size = MarkerSize, 
+                          color = PreMarkerColor,
+                          line = list(color = 'rgb(0,0,0)'),
+                          sizemode = 'diameter', opacity = 0.5)) %>%
+  add_markers(name = 'Post-Covid',
+            showlegend = TRUE,
+              x = ~ProdCOST_Pang_2,
+            y = ~FarmNumber,
+            marker = list(symbol = PostMarker,
+                          size = MarkerSize, 
+                          color = PostMarkerColor,
+                          line = list(color = 'rgb(0,0,0)'),
+                          sizemode = 'diameter', opacity = 0.5)) %>%
+  layout(
+    shapes = list(
+      list(type = 'line', layer = 'bottom', 
+                  y0 = 0, y1 = 41,
+                  x0 = Mean_Prod_Pang_1, x1 = Mean_Prod_Pang_1,
+                  line = list(color = 'rgb(200,200,200)', dash = 'dot', width = 0.5)),
+      list(type = 'line', layer = 'bottom', 
+                  y0 = 0, y1 = 41,
+                  x0 = Mean_Prod_Pang_2, x1 = Mean_Prod_Pang_2,
+                  line = list(color = 'rgb(50,50,50)', dash = 'dot', width = 0.5))
+      ),
+    xaxis = list(title = "Pangasius<br>Total Production Cost (BDT/kg)",
+                 range = c(60,90), showline = TRUE, showgrid = FALSE),
+    yaxis = list(title = "Farm",showticklabels = FALSE,
+                 range = c(0,41), showline = TRUE, showgrid = FALSE)
+  )
+
+SingleTotalLabDumbbellPlot_TILA_PROD <- plot_ly(data = RawData, type = 'scatter', mode = 'markers') %>%
+  add_segments(x = ~ProdCOST_Tila_2, xend = ~ProdCOST_Tila_1, y = ~FarmNumber, yend = ~FarmNumber, 
+               showlegend = FALSE,
+               name = 'Tilapia',
+               line = list(color = SegmentLineColor)) %>%
+  add_markers(x = ~ProdCOST_Tila_1,
+              y = ~FarmNumber,
+              name = "Pre-Covid",
+              showlegend = FALSE,
+              marker = list(symbol = PreMarker,
+                            size = MarkerSize, 
+                          color = PreMarkerColor,
+                          line = list(color = 'rgb(0,0,0)'),
+                          sizemode = 'diameter', opacity = 0.5)) %>%
+  add_markers(name = 'Post-Covid',
+            showlegend = FALSE,
+              x = ~ProdCOST_Tila_2,
+            y = ~FarmNumber,
+            marker = list(symbol = PostMarker,
+                          size = MarkerSize, 
+                          color = PostMarkerColor,
+                          line = list(color = 'rgb(0,0,0)'),
+                          sizemode = 'diameter', opacity = 0.5)) %>%
+  layout(
+    shapes = list(
+      list(type = 'line', layer = 'bottom', 
+                  y0 = 0, y1 = 41,
+                  x0 = Mean_Prod_Tila_1, x1 = Mean_Prod_Tila_1,
+                  line = list(color = 'rgb(200,200,200)', dash = 'dot', width = 0.5)),
+      list(type = 'line', layer = 'bottom', 
+                  y0 = 0, y1 = 41,
+                  x0 = Mean_Prod_Tila_2, x1 = Mean_Prod_Tila_2,
+                  line = list(color = 'rgb(50,50,50)', dash = 'dot', width = 0.5))
+      ),
+    xaxis = list(title = "Tilapia<br>Total Production Cost (BDT/kg)",
+                 range = c(60,90), showline = TRUE, showgrid = FALSE),
+    yaxis = list(title = "Farm",showticklabels = FALSE,
+                 range = c(0,41), showline = TRUE, showgrid = FALSE)
+  )
+
+SingleTotalLabDumbbellPlot_CARP_PROD <- plot_ly(data = RawData, type = 'scatter', mode = 'markers') %>%
+  add_segments(x = ~ProdCOST_Carp_2, xend = ~ProdCOST_Carp_1, y = ~FarmNumber, yend = ~FarmNumber, 
+               showlegend = FALSE,
+               name = 'Tilapia',
+               line = list(color = SegmentLineColor)) %>%
+  add_markers(x = ~ProdCOST_Carp_1,
+              y = ~FarmNumber,
+              name = "Pre-Covid",
+              showlegend = FALSE,
+              marker = list(symbol = PreMarker,
+                            size = MarkerSize, 
+                          color = PreMarkerColor,
+                          line = list(color = 'rgb(0,0,0)'),
+                          sizemode = 'diameter', opacity = 0.5)) %>%
+  add_markers(name = 'Post-Covid',
+            showlegend = FALSE,
+              x = ~ProdCOST_Carp_2,
+            y = ~FarmNumber,
+            marker = list(symbol = PostMarker,
+                          size = MarkerSize, 
+                          color = PostMarkerColor,
+                          line = list(color = 'rgb(0,0,0)'),
+                          sizemode = 'diameter', opacity = 0.5)) %>%
+  layout(
+    shapes = list(
+      list(type = 'line', layer = 'bottom', 
+                  y0 = 0, y1 = 41,
+                  x0 = Mean_Prod_Carp_1, x1 = Mean_Prod_Carp_1,
+                  line = list(color = 'rgb(200,200,200)', dash = 'dot', width = 0.5)),
+      list(type = 'line', layer = 'bottom', 
+                  y0 = 0, y1 = 41,
+                  x0 = Mean_Prod_Carp_2, x1 = Mean_Prod_Carp_2,
+                  line = list(color = 'rgb(50,50,50)', dash = 'dot', width = 0.5))
+      ),
+    xaxis = list(title = "Carp<br>Total Production Cost (BDT/kg)",
+                 range = c(80,130), showline = TRUE, showgrid = FALSE),
+    yaxis = list(title = "Farm",showticklabels = FALSE,
+                 range = c(0,41), showline = TRUE, showgrid = FALSE)
+  )
+
+SingleTotalLabDumbbellPlot_OTHERCAT_PROD <- plot_ly(data = RawData, type = 'scatter', mode = 'markers') %>%
+  add_segments(x = ~ProdCOST_OtherCat_2, xend = ~ProdCOST_OtherCat_1, y = ~FarmNumber, yend = ~FarmNumber, 
+               showlegend = FALSE,
+               name = 'OtherCatfish',
+               line = list(color = SegmentLineColor)) %>%
+  add_markers(x = ~ProdCOST_OtherCat_1,
+              y = ~FarmNumber,
+              name = "Pre-Covid",
+              showlegend = FALSE,
+              marker = list(symbol = PreMarker,
+                            size = MarkerSize, 
+                          color = PreMarkerColor,
+                          line = list(color = 'rgb(0,0,0)'),
+                          sizemode = 'diameter', opacity = 0.5)) %>%
+  add_markers(name = 'Post-Covid',
+            showlegend = FALSE,
+              x = ~ProdCOST_OtherCat_2,
+            y = ~FarmNumber,
+            marker = list(symbol = PostMarker,
+                          size = MarkerSize, 
+                          color = PostMarkerColor,
+                          line = list(color = 'rgb(0,0,0)'),
+                          sizemode = 'diameter', opacity = 0.5)) %>%
+  layout(
+    shapes = list(
+      list(type = 'line', layer = 'bottom', 
+                  y0 = 0, y1 = 41,
+                  x0 = Mean_Prod_OtherCat_1, x1 = Mean_Prod_OtherCat_1,
+                  line = list(color = 'rgb(200,200,200)', dash = 'dot', width = 0.5)),
+      list(type = 'line', layer = 'bottom', 
+                  y0 = 0, y1 = 41,
+                  x0 = Mean_Prod_OtherCat_2, x1 = Mean_Prod_OtherCat_2,
+                  line = list(color = 'rgb(50,50,50)', dash = 'dot', width = 0.5))
+      ),
+    xaxis = list(title = "Other Catfish<br>Total Production Cost (BDT/kg)",
+                 range = c(130,240), showline = TRUE, showgrid = FALSE),
+    yaxis = list(title = "Farm",showticklabels = FALSE,
+                 range = c(0,41), showline = TRUE, showgrid = FALSE)
+  )
+
+SingleTotalLabDumbbellPlot_PROD_Subplot <- subplot(SingleTotalLabDumbbellPlot_PANG_PROD,
+                                              SingleTotalLabDumbbellPlot_TILA_PROD,
+                                              SingleTotalLabDumbbellPlot_CARP_PROD,
+                                              SingleTotalLabDumbbellPlot_OTHERCAT_PROD,
+                                              titleX = TRUE, titleY = TRUE, shareY = TRUE,
+                                              margin = 0.05)
+```
+
+### Dumbbell plot of total production costs
+
+`r SingleTotalLabDumbbellPlot_PROD_Subplot`
+
+```{r Work out the profit margin for farmers, include=FALSE}
+#############################################################################################
+#
+# The gross profit margin is (GATEPrice - TOTALProductionCost)/GATEPrice
+#
+#############################################################################################
+RawData[, GrossProfit_Pang_1 := ((GatePRICE_Pang_1 - ProdCOST_Pang_1)/GatePRICE_Pang_1)]
+RawData[, GrossProfit_Pang_2 := ((GatePRICE_Pang_2 - ProdCOST_Pang_2)/GatePRICE_Pang_2)]
+RawData[, GrossProfit_Tila_1 := ((GatePRICE_Tila_1 - ProdCOST_Tila_1)/GatePRICE_Tila_1)]
+RawData[, GrossProfit_Tila_2 := ((GatePRICE_Tila_2 - ProdCOST_Tila_2)/GatePRICE_Tila_2)]
+RawData[, GrossProfit_Carp_1 := ((GatePRICE_Carp_1 - ProdCOST_Carp_1)/GatePRICE_Carp_1)]
+RawData[, GrossProfit_Carp_2 := ((GatePRICE_Carp_2 - ProdCOST_Carp_2)/GatePRICE_Carp_2)]
+RawData[, GrossProfit_OtherCat_1 := ((GatePRICE_OtherCat_1 - ProdCOST_OtherCat_1)/GatePRICE_OtherCat_1)]
+RawData[, GrossProfit_OtherCat_2 := ((GatePRICE_OtherCat_2 - ProdCOST_OtherCat_2)/GatePRICE_OtherCat_2)]
+
+##############################################
+# Basic feed stats
+##############################################
+Mean_GrossMargin_Pang_1 <- mean(RawData$GrossProfit_Pang_1, na.rm = TRUE)
+Mean_GrossMargin_Pang_2 <- mean(RawData$GrossProfit_Pang_2, na.rm = TRUE)
+Mean_GrossMargin_Tila_1 <- mean(RawData$GrossProfit_Tila_1, na.rm = TRUE)
+Mean_GrossMargin_Tila_2 <- mean(RawData$GrossProfit_Tila_2, na.rm = TRUE)
+Mean_GrossMargin_Carp_1 <- mean(RawData$GrossProfit_Carp_1, na.rm = TRUE)
+Mean_GrossMargin_Carp_2 <- mean(RawData$GrossProfit_Carp_2, na.rm = TRUE)
+Mean_GrossMargin_OtherCat_1 <- mean(RawData$GrossProfit_OtherCat_1, na.rm = TRUE)
+Mean_GrossMargin_OtherCat_2 <- mean(RawData$GrossProfit_OtherCat_2, na.rm = TRUE)
+
+Std_GrossMargin_Pang_1 <- sd(RawData$GrossProfit_Pang_1, na.rm = TRUE)
+Std_GrossMargin_Pang_2 <- sd(RawData$GrossProfit_Pang_2, na.rm = TRUE)
+Std_GrossMargin_Tila_1 <- sd(RawData$GrossProfit_Tila_1, na.rm = TRUE)
+Std_GrossMargin_Tila_2 <- sd(RawData$GrossProfit_Tila_2, na.rm = TRUE)
+Std_GrossMargin_Carp_1 <- sd(RawData$GrossProfit_Carp_1, na.rm = TRUE)
+Std_GrossMargin_Carp_2 <- sd(RawData$GrossProfit_Carp_2, na.rm = TRUE)
+Std_GrossMargin_OtherCat_1 <- sd(RawData$GrossProfit_OtherCat_1, na.rm = TRUE)
+Std_GrossMargin_OtherCat_2 <- sd(RawData$GrossProfit_OtherCat_2, na.rm = TRUE)
+```
+
+## Profit margin for farmers
+
+The profit margin is the profit (Gate Price minus the Total Production Costs). Net profit margin = net profit/revenue or (revenue - cost)/revenue
+
+### Differences in gross margins per kg
+
+The gross margin was considered.
+
+Prior to covid19 the mean gross margin for fish were:  
+  
+ Pangasius: **`r Mean_GrossMargin_Pang_1`** +/- **`r Std_GrossMargin_Pang_1`**  
+ Tilapia: **`r Mean_GrossMargin_Tila_1`** +/- **`r Std_GrossMargin_Tila_1`**  
+ Carp: **`r Mean_GrossMargin_Carp_1`** +/- **`r Std_GrossMargin_Carp_1`**  
+ Other catfish: **`r Mean_GrossMargin_OtherCat_1`** +/- **`r Std_GrossMargin_OtherCat_1`**
+ 
+After covid19 the mean gross margin for fish were:  
+  
+ Pangasius: **`r Mean_GrossMargin_Pang_2`** +/- **`r Std_GrossMargin_Pang_2`**  
+ Tilapia: **`r Mean_GrossMargin_Tila_2`** +/- **`r Std_GrossMargin_Tila_2`**  
+ Carp: **`r Mean_GrossMargin_Carp_2`** +/- **`r Std_GrossMargin_Carp_2`**  
+ Other catfish: **`r Mean_GrossMargin_OtherCat_2`** +/- **`r Std_GrossMargin_OtherCat_2`**
+
+The percentage increase in gross margins were:  
+  Pangasius: **`r (Mean_GrossMargin_Pang_2 - Mean_GrossMargin_Pang_1) / Mean_GrossMargin_Pang_2 * 100`**  
+  Tilapia: **`r (Mean_GrossMargin_Tila_2 - Mean_GrossMargin_Tila_1) / Mean_GrossMargin_Tila_2 * 100`**  
+  Carp: **`r (Mean_GrossMargin_Carp_2 - Mean_GrossMargin_Carp_1) / Mean_GrossMargin_Carp_2 * 100`**  
+  Other catfish: **`r (Mean_GrossMargin_OtherCat_2 - Mean_GrossMargin_OtherCat_1) / Mean_GrossMargin_OtherCat_2 * 100`** 
+  
+The increase per kg of average gross margin were:  
+  Pangasius: **`r (Mean_GrossMargin_Pang_2 - Mean_GrossMargin_Pang_1)`**  
+  Tilapia: **`r (Mean_GrossMargin_Tila_2 - Mean_GrossMargin_Tila_1)`**  
+  Carp: **`r (Mean_GrossMargin_Carp_2 - Mean_GrossMargin_Carp_1)`**  
+  Other catfish: **`r (Mean_GrossMargin_OtherCat_2 - Mean_GrossMargin_OtherCat_1)`** 
+
+```{r Margins dumbbell plot, include=FALSE}
+#############################################################
+# Plot comparisons of total production cost pre and post covid
+#############################################################
+############################################################
+# Single plots to create a subplot
+###########################################################
+PreMarker = 'square-open'
+PostMarker = 'circle'
+PreMarkerColor = 'rgb(0,0,0)'
+PostMarkerColor = 'rgb(0,0,0)'
+SegmentLineColor = 'rgb(50,50,50)'
+AxisTitleFONT = list(family = "Arial", size = 12, color = 'black')
+LegendFONT = list(family = "Arial", size = 12, color = 'black')
+DASH = "5px"
+DOT = "2px"
+
+SingleTotalLabDumbbellPlot_PANG_MARGIN_PRE <- plot_ly(data = RawData, type = 'scatter', mode = 'markers') %>%
+  add_segments(x = ~GatePRICE_Pang_1, xend = ~ProdCOST_Pang_1, y = ~FarmNumber, yend = ~FarmNumber, 
+               showlegend = FALSE,
+               name = 'Pangasius',
+               line = list(color = SegmentLineColor)) %>%
+  add_markers(x = ~GatePRICE_Pang_1,
+              y = ~FarmNumber,
+              name = "Gate Price",
+              showlegend = TRUE,
+              marker = list(symbol = PreMarker,
+                            size = MarkerSize, 
+                          color = PreMarkerColor,
+                          line = list(color = 'rgb(0,0,0)'),
+                          sizemode = 'diameter', opacity = 0.5)) %>%
+  add_markers(name = 'Production Cost',
+            showlegend = TRUE,
+              x = ~ProdCOST_Pang_1,
+            y = ~FarmNumber,
+            marker = list(symbol = PostMarker,
+                          size = MarkerSize, 
+                          color = PostMarkerColor,
+                          line = list(color = 'rgb(0,0,0)'),
+                          sizemode = 'diameter', opacity = 0.5)) %>%
+  add_lines(x= 0, y = 0,
+            name = "Mean Gate Price", 
+            showlegend = TRUE, 
+            line = list(color = 'rgb(0,0,0)', dash = DOT, width = 0.5)) %>%
+  add_lines(x= 0, y = 0,
+            name = "Mean Production Cost", 
+            showlegend = TRUE, 
+            line = list(color = 'rgb(20,20,20)', dash = DASH, width = 0.5)) %>%
+  layout(
+    shapes = list(
+      list(type = 'line', layer = 'bottom', 
+                  y0 = 0, y1 = 41,
+                  x0 = MeanGate_Pang_1, x1 = MeanGate_Pang_1,
+                  line = list(color = 'rgb(0,0,0)', dash = 'dash', width = 0.5)),
+      list(type = 'line', layer = 'bottom', 
+                  y0 = 0, y1 = 41,
+                  x0 = Mean_Prod_Pang_1, x1 = Mean_Prod_Pang_1,
+                  line = list(color = 'rgb(20,20,20)', dash = 'dot', width = 0.5))
+      ),
+    xaxis = list(title = "",
+                 range = c(60,100), showline = TRUE, showgrid = FALSE),
+    yaxis = list(title = "Farm",showticklabels = FALSE,
+                 range = c(0,41), showline = TRUE, showgrid = FALSE)
+  )
+
+SingleTotalLabDumbbellPlot_PANG_MARGIN_POST <- plot_ly(data = RawData, type = 'scatter', mode = 'markers') %>%
+  add_segments(x = ~GatePRICE_Pang_2, xend = ~ProdCOST_Pang_2, y = ~FarmNumber, yend = ~FarmNumber, 
+               showlegend = FALSE,
+               name = 'Pangasius',
+               line = list(color = SegmentLineColor)) %>%
+  add_markers(x = ~GatePRICE_Pang_2,
+              y = ~FarmNumber,
+              name = "Gate Price",
+              showlegend = FALSE,
+              marker = list(symbol = PreMarker,
+                            size = MarkerSize, 
+                          color = PreMarkerColor,
+                          line = list(color = 'rgb(0,0,0)'),
+                          sizemode = 'diameter', opacity = 0.5)) %>%
+  add_markers(name = 'Production Cost',
+            showlegend = FALSE,
+              x = ~ProdCOST_Pang_2,
+            y = ~FarmNumber,
+            marker = list(symbol = PostMarker,
+                          size = MarkerSize, 
+                          color = PostMarkerColor,
+                          line = list(color = 'rgb(0,0,0)'),
+                          sizemode = 'diameter', opacity = 0.5)) %>%
+  layout(
+    shapes = list(
+      list(type = 'line', layer = 'bottom', 
+                  y0 = 0, y1 = 41,
+                  x0 = MeanGate_Pang_2, x1 = MeanGate_Pang_2,
+                  line = list(color = 'rgb(0,0,0)', dash = DOT, width = 0.5)),
+      list(type = 'line', layer = 'bottom', 
+                  y0 = 0, y1 = 41,
+                  x0 = Mean_Prod_Pang_2, x1 = Mean_Prod_Pang_2,
+                  line = list(color = 'rgb(20,20,20)', dash = DASH, width = 0.5))
+      ),
+    xaxis = list(title = list(text = "<I>Pangasius</I><br>", font = AxisTitleFONT),
+                 range = c(60,90), showline = TRUE, showgrid = FALSE),
+    yaxis = list(title = "Farm",showticklabels = FALSE,
+                 range = c(0,41), showline = TRUE, showgrid = FALSE)
+  )
+
+SingleTotalLabDumbbellPlot_TILA_MARGIN_PRE <- plot_ly(data = RawData, type = 'scatter', mode = 'markers') %>%
+  add_segments(x = ~GatePRICE_Tila_1, xend = ~ProdCOST_Tila_1, y = ~FarmNumber, yend = ~FarmNumber, 
+               showlegend = FALSE,
+               name = 'Tilapia',
+               line = list(color = SegmentLineColor)) %>%
+  add_markers(x = ~GatePRICE_Tila_1,
+              y = ~FarmNumber,
+              name = "Gate Price",
+              showlegend = FALSE,
+              marker = list(symbol = PreMarker,
+                            size = MarkerSize, 
+                          color = PreMarkerColor,
+                          line = list(color = 'rgb(0,0,0)'),
+                          sizemode = 'diameter', opacity = 0.5)) %>%
+  add_markers(name = 'Production Cost',
+            showlegend = FALSE,
+              x = ~ProdCOST_Tila_1,
+            y = ~FarmNumber,
+            marker = list(symbol = PostMarker,
+                          size = MarkerSize, 
+                          color = PostMarkerColor,
+                          line = list(color = 'rgb(0,0,0)'),
+                          sizemode = 'diameter', opacity = 0.5)) %>%
+  layout(
+    shapes = list(
+      list(type = 'line', layer = 'bottom', 
+                  y0 = 0, y1 = 41,
+                  x0 = MeanGate_Tila_1, x1 = MeanGate_Tila_1,
+                  line = list(color = 'rgb(0,0,0)', dash = DOT, width = 0.5)),
+      list(type = 'line', layer = 'bottom', 
+                  y0 = 0, y1 = 41,
+                  x0 = Mean_Prod_Tila_1, x1 = Mean_Prod_Tila_1,
+                  line = list(color = 'rgb(20,20,20)', dash = DASH, width = 0.5))
+      ),
+    xaxis = list(title = "",
+                 range = c(60,100), showline = TRUE, showgrid = FALSE),
+    yaxis = list(title = "Farm",showticklabels = FALSE,
+                 range = c(0,41), showline = TRUE, showgrid = FALSE)
+  )
+
+SingleTotalLabDumbbellPlot_TILA_MARGIN_POST <- plot_ly(data = RawData, type = 'scatter', mode = 'markers') %>%
+  add_segments(x = ~GatePRICE_Tila_2, xend = ~ProdCOST_Tila_2, y = ~FarmNumber, yend = ~FarmNumber, 
+               showlegend = FALSE,
+               name = 'Tilapia',
+               line = list(color = SegmentLineColor)) %>%
+  add_markers(x = ~GatePRICE_Tila_2,
+              y = ~FarmNumber,
+              name = "Gate Price",
+              showlegend = FALSE,
+              marker = list(symbol = PreMarker,
+                            size = MarkerSize, 
+                          color = PreMarkerColor,
+                          line = list(color = 'rgb(0,0,0)'),
+                          sizemode = 'diameter', opacity = 0.5)) %>%
+  add_markers(name = 'Production Cost',
+            showlegend = FALSE,
+              x = ~ProdCOST_Tila_2,
+            y = ~FarmNumber,
+            marker = list(symbol = PostMarker,
+                          size = MarkerSize, 
+                          color = PostMarkerColor,
+                          line = list(color = 'rgb(0,0,0)'),
+                          sizemode = 'diameter', opacity = 0.5)) %>%
+  layout(
+    shapes = list(
+      list(type = 'line', layer = 'bottom', 
+                  y0 = 0, y1 = 41,
+                  x0 = MeanGate_Tila_2, x1 = MeanGate_Tila_2,
+                  line = list(color = 'rgb(0,0,0)', dash = DOT, width = 0.5)),
+      list(type = 'line', layer = 'bottom', 
+                  y0 = 0, y1 = 41,
+                  x0 = Mean_Prod_Tila_2, x1 = Mean_Prod_Tila_2,
+                  line = list(color = 'rgb(20,20,20)', dash = DASH, width = 0.5))
+      ),
+    xaxis = list(title = list(text = "Tilapia<br>", font = AxisTitleFONT),
+                 range = c(60,90), showline = TRUE, showgrid = FALSE),
+    yaxis = list(title = "Farm",showticklabels = FALSE,
+                 range = c(0,41), showline = TRUE, showgrid = FALSE)
+  )
+
+SingleTotalLabDumbbellPlot_CARP_MARGIN_PRE <- plot_ly(data = RawData, type = 'scatter', mode = 'markers') %>%
+  add_segments(x = ~GatePRICE_Carp_1, xend = ~ProdCOST_Carp_1, y = ~FarmNumber, yend = ~FarmNumber, 
+               showlegend = FALSE,
+               name = 'Carp',
+               line = list(color = SegmentLineColor)) %>%
+  add_markers(x = ~GatePRICE_Carp_1,
+              y = ~FarmNumber,
+              name = "Gate Price",
+              showlegend = FALSE,
+              marker = list(symbol = PreMarker,
+                            size = MarkerSize, 
+                          color = PreMarkerColor,
+                          line = list(color = 'rgb(0,0,0)'),
+                          sizemode = 'diameter', opacity = 0.5)) %>%
+  add_markers(name = 'Production Cost',
+            showlegend = FALSE,
+              x = ~ProdCOST_Carp_1,
+            y = ~FarmNumber,
+            marker = list(symbol = PostMarker,
+                          size = MarkerSize, 
+                          color = PostMarkerColor,
+                          line = list(color = 'rgb(0,0,0)'),
+                          sizemode = 'diameter', opacity = 0.5)) %>%
+  layout(
+    shapes = list(
+      list(type = 'line', layer = 'bottom', 
+                  y0 = 0, y1 = 41,
+                  x0 = MeanGate_Carp_1, x1 = MeanGate_Carp_1,
+                  line = list(color = 'rgb(0,0,0)', dash = DOT, width = 0.5)),
+      list(type = 'line', layer = 'bottom', 
+                  y0 = 0, y1 = 41,
+                  x0 = Mean_Prod_Carp_1, x1 = Mean_Prod_Carp_1,
+                  line = list(color = 'rgb(20,20,20)', dash = DASH, width = 0.5))
+      ),
+    xaxis = list(title = "",
+                 range = c(80,130), showline = TRUE, showgrid = FALSE),
+    yaxis = list(title = "Farm",showticklabels = FALSE,
+                 range = c(0,41), showline = TRUE, showgrid = FALSE)
+  )
+
+SingleTotalLabDumbbellPlot_CARP_MARGIN_POST <- plot_ly(data = RawData, type = 'scatter', mode = 'markers') %>%
+  add_segments(x = ~GatePRICE_Carp_2, xend = ~ProdCOST_Carp_2, y = ~FarmNumber, yend = ~FarmNumber, 
+               showlegend = FALSE,
+               name = 'Carp',
+               line = list(color = SegmentLineColor)) %>%
+  add_markers(x = ~GatePRICE_Carp_2,
+              y = ~FarmNumber,
+              name = "Gate Price",
+              showlegend = FALSE,
+              marker = list(symbol = PreMarker,
+                            size = MarkerSize, 
+                          color = PreMarkerColor,
+                          line = list(color = 'rgb(0,0,0)'),
+                          sizemode = 'diameter', opacity = 0.5)) %>%
+  add_markers(name = 'Production Cost',
+            showlegend = FALSE,
+              x = ~ProdCOST_Carp_2,
+            y = ~FarmNumber,
+            marker = list(symbol = PostMarker,
+                          size = MarkerSize, 
+                          color = PostMarkerColor,
+                          line = list(color = 'rgb(0,0,0)'),
+                          sizemode = 'diameter', opacity = 0.5)) %>%
+  layout(
+    shapes = list(
+      list(type = 'line', layer = 'bottom', 
+                  y0 = 0, y1 = 41,
+                  x0 = MeanGate_Carp_2, x1 = MeanGate_Carp_2,
+                  line = list(color = 'rgb(0,0,0)', dash = DOT, width = 0.5)),
+      list(type = 'line', layer = 'bottom', 
+                  y0 = 0, y1 = 41,
+                  x0 = Mean_Prod_Carp_2, x1 = Mean_Prod_Carp_2,
+                  line = list(color = 'rgb(20,20,20)', dash = DASH, width = 0.5))
+      ),
+    xaxis = list(title = list(text = "Carp<br>", font = AxisTitleFONT),
+                 range = c(80,130), showline = TRUE, showgrid = FALSE),
+    yaxis = list(title = "Farm",showticklabels = FALSE,
+                 range = c(0,41), showline = TRUE, showgrid = FALSE)
+  )
+
+
+SingleTotalLabDumbbellPlot_OTHERCAT_MARGIN_PRE <- plot_ly(data = RawData, type = 'scatter', mode = 'markers') %>%
+  add_segments(x = ~GatePRICE_OtherCat_1, xend = ~ProdCOST_OtherCat_1, y = ~FarmNumber, yend = ~FarmNumber, 
+               showlegend = FALSE,
+               name = 'OtherCat',
+               line = list(color = SegmentLineColor)) %>%
+  add_markers(x = ~GatePRICE_OtherCat_1,
+              y = ~FarmNumber,
+              name = "Gate Price",
+              showlegend = FALSE,
+              marker = list(symbol = PreMarker,
+                            size = MarkerSize, 
+                          color = PreMarkerColor,
+                          line = list(color = 'rgb(0,0,0)'),
+                          sizemode = 'diameter', opacity = 0.5)) %>%
+  add_markers(name = 'Production Cost',
+            showlegend = FALSE,
+              x = ~ProdCOST_OtherCat_1,
+            y = ~FarmNumber,
+            marker = list(symbol = PostMarker,
+                          size = MarkerSize, 
+                          color = PostMarkerColor,
+                          line = list(color = 'rgb(0,0,0)'),
+                          sizemode = 'diameter', opacity = 0.5)) %>%
+  layout(
+    shapes = list(
+      list(type = 'line', layer = 'bottom', 
+                  y0 = 0, y1 = 41,
+                  x0 = MeanGate_OtherCat_1, x1 = MeanGate_OtherCat_1,
+                  line = list(color = 'rgb(0,0,0)', dash = DOT, width = 0.5)),
+      list(type = 'line', layer = 'bottom', 
+                  y0 = 0, y1 = 41,
+                  x0 = Mean_Prod_OtherCat_1, x1 = Mean_Prod_OtherCat_1,
+                  line = list(color = 'rgb(20,20,20)', dash = DASH, width = 0.5))
+      ),
+    xaxis = list(title = "",
+                 range = c(100,350), showline = TRUE, showgrid = FALSE),
+    yaxis = list(title = "Farm",showticklabels = FALSE,
+                 range = c(0,41), showline = TRUE, showgrid = FALSE)
+  )
+
+SingleTotalLabDumbbellPlot_OTHERCAT_MARGIN_POST <- plot_ly(data = RawData, type = 'scatter', mode = 'markers') %>%
+  add_segments(x = ~GatePRICE_OtherCat_2, xend = ~ProdCOST_OtherCat_2, y = ~FarmNumber, yend = ~FarmNumber, 
+               showlegend = FALSE,
+               name = 'OtherCat',
+               line = list(color = SegmentLineColor)) %>%
+  add_markers(x = ~GatePRICE_OtherCat_2,
+              y = ~FarmNumber,
+              name = "Gate Price",
+              showlegend = FALSE,
+              marker = list(symbol = PreMarker,
+                            size = MarkerSize, 
+                          color = PreMarkerColor,
+                          line = list(color = 'rgb(0,0,0)'),
+                          sizemode = 'diameter', opacity = 0.5)) %>%
+  add_markers(name = 'Production Cost',
+            showlegend = FALSE,
+              x = ~ProdCOST_OtherCat_2,
+            y = ~FarmNumber,
+            marker = list(symbol = PostMarker,
+                          size = MarkerSize, 
+                          color = PostMarkerColor,
+                          line = list(color = 'rgb(0,0,0)'),
+                          sizemode = 'diameter', opacity = 0.5)) %>%
+  layout(
+    shapes = list(
+      list(type = 'line', layer = 'bottom', 
+                  y0 = 0, y1 = 41,
+                  x0 = MeanGate_OtherCat_2, x1 = MeanGate_OtherCat_2,
+                  line = list(color = 'rgb(0,0,0)', dash = DOT, width = 0.5)),
+      list(type = 'line', layer = 'bottom', 
+                  y0 = 0, y1 = 41,
+                  x0 = Mean_Prod_OtherCat_2, x1 = Mean_Prod_OtherCat_2,
+                  line = list(color = 'rgb(20,20,20)', dash = DASH, width = 0.5))
+      ),
+    xaxis = list(title = list(text = "Other Catfish<br>", font = AxisTitleFONT),
+                 range = c(100,350), showline = TRUE, showgrid = FALSE),
+    yaxis = list(title = "Farm",showticklabels = FALSE,
+                 range = c(0,41), showline = TRUE, showgrid = FALSE)
+  )
+
+
+SingleTotalLabDumbbellPlot_Pang_MARGIN_Subplot <- subplot(SingleTotalLabDumbbellPlot_PANG_MARGIN_PRE,
+                                                          SingleTotalLabDumbbellPlot_TILA_MARGIN_PRE,
+                                                          SingleTotalLabDumbbellPlot_CARP_MARGIN_PRE,
+                                                          SingleTotalLabDumbbellPlot_OTHERCAT_MARGIN_PRE,
+                                                          SingleTotalLabDumbbellPlot_PANG_MARGIN_POST,
+                                                          SingleTotalLabDumbbellPlot_TILA_MARGIN_POST,
+                                                          SingleTotalLabDumbbellPlot_CARP_MARGIN_POST,
+                                                          SingleTotalLabDumbbellPlot_OTHERCAT_MARGIN_POST,
+                                              titleX = TRUE, titleY = TRUE, shareY = TRUE, shareX = FALSE,
+                                              margin = 0.04,
+                                              nrows = 2) %>% 
+                                              layout(legend = list(bordercolor = 'black', borderwidth = 0.5, orientation = 'h',
+                                                                   x = 0.5, xanchor = 'center', 
+                                                                   y = 1.2, yanchor = 'top',
+                                                                   font = LegendFONT,
+                                                                   tracegroupgap = 2), 
+                                                     annotations = list(text = "<b>Cost Price (BDT)</b>", showarrow = FALSE, 
+                                                                        x = 0.5, xref = 'paper', xanchor = 'center',
+                                                                        y = -0.25, yref = 'paper', yanchor = 'bottom',
+                                                                        font = list(family = 'Arial', size = 14)),
+                                                     margin = list(l = 10, r = 10, t = 10, b = 10)
+                                              )
+orca(SingleTotalLabDumbbellPlot_Pang_MARGIN_Subplot, "GrossMARGIN_DumbbellPlot.svg")
+```
+
+`r SingleTotalLabDumbbellPlot_Pang_MARGIN_Subplot`
