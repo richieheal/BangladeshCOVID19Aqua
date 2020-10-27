@@ -1,0 +1,729 @@
+---
+title: "DataAnalysisConsumerResponses"
+author: "Richard Heal"
+date: "9/8/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#############################################
+# Load in the consumer data
+#############################################
+ConsumerDataFile <- "COVIDAqua_ConsumerResponse.csv"
+ConsumerData <- read.csv(ConsumerDataFile, header = TRUE, stringsAsFactors = TRUE)
+ConsumerData$Freq_Pang_1 <- factor(ConsumerData$Freq_Pang_1, levels = c("Regularly (every week)", "Occasionally (every month)","Rarely (special occasions)","Never"))
+ConsumerData$Freq_Pang_2 <- factor(ConsumerData$Freq_Pang_2, levels = c("Regularly (every week)", "Occasionally (every month)","Rarely (special occasions)","Never"))
+ConsumerData$Freq_Tila_1 <- factor(ConsumerData$Freq_Tila_1, levels = c("Regularly (every week)", "Occasionally (every month)","Rarely (special occasions)","Never"))
+ConsumerData$Freq_Tila_2 <- factor(ConsumerData$Freq_Tila_2, levels = c("Regularly (every week)", "Occasionally (every month)","Rarely (special occasions)","Never"))
+ConsumerData$Freq_Carp_1 <- factor(ConsumerData$Freq_Carp_1, levels = c("Regularly (every week)", "Occasionally (every month)","Rarely (special occasions)","Never"))
+ConsumerData$Freq_Carp_2 <- factor(ConsumerData$Freq_Carp_2, levels = c("Regularly (every week)", "Occasionally (every month)","Rarely (special occasions)","Never"))
+ConsumerData$Freq_OtherCat_1 <- factor(ConsumerData$Freq_OtherCat_1, levels = c("Regularly (every week)", "Occasionally (every month)","Rarely (special occasions)","Never"))
+ConsumerData$Freq_OtherCat_2 <- factor(ConsumerData$Freq_OtherCat_2, levels = c("Regularly (every week)", "Occasionally (every month)","Rarely (special occasions)","Never"))
+
+library(data.table)
+ConsumerData <- setDT(ConsumerData)
+NumberResponses <- ConsumerData[,.N]
+
+# Set the levels in the 
+
+```
+
+## Consumer Responses the COVID and fish demand
+
+This markdown documents the data analysis performed on consumer data to assess the demand on fish and perceived availability pre and post covid 19.
+
+From the survey there were **`r NumberResponses`** that were collected in markets around the region.
+
+### Demographics - basis stats
+
+```{r Demographics Stats, include=FALSE}
+#######################################################
+# Here some basic stats to show a range of responses
+#######################################################
+# Ages
+Mean_Age <- mean(ConsumerData$Age, na.rm = TRUE)
+Median_Age <- median(ConsumerData$Age, na.rm = TRUE)
+MaxAge <- max(ConsumerData$Age, na.rm = TRUE)
+MinAge <- min(ConsumerData$Age, na.rm = TRUE)
+
+# Genders
+Percentage_Male <- ConsumerData[Gender == "Male",.N,]/NumberResponses * 100
+Percentage_Female <- ConsumerData[Gender == "Female",.N,]/NumberResponses * 100
+
+
+# Histrogram
+
+```
+
+The range of ages was from **`r MinAge`** to **`r MaxAge`**, with a mean age of **`r Mean_Age`** and a median age of **`r Median_Age`**
+
+The survey gained responses from **`r ConsumerData[Gender == "Male",.N,]`** males (**`r Percentage_Male`**) and **`r ConsumerData[Gender == "Female",.N,]`** females (**`r Percentage_Female`**).
+
+```{r Demand for Fish, echo = TRUE}
+#####################################################################
+#
+# Determine if the demand for fish has increased postCOVID
+#
+# Need to restructure the data.frame to have a factor for pre and post
+# covid and then the data into single columns
+#
+# Data required = Amount, Frequency of consumption, Freq for each type
+#####################################################################
+
+# Analysis of the main protein source pre and post covid
+# This function will be used to store likert questions into separate groups:
+library(likert)
+
+
+# Statistical analysis of differences in the amounts purchased
+PreCovidAmount.prob = table(ConsumerData$Amount_1)/NumberResponses
+PostCovidAmount.freq = table(ConsumerData$Amount_2)
+Amount_Chi <- chisq.test(PostCovidAmount.freq, 
+                         p = PreCovidAmount.prob)
+
+
+LikertData = data.frame(cbind(
+  c(rep("Pre-COVID19", NumberResponses), rep("Post-COVID19", NumberResponses)),
+  Amount = c(ConsumerData[, .(Amount_1)]$Amount_1, ConsumerData[, .(Amount_2)]$Amount_2),
+  FreqC = c(ConsumerData[, .(Consume_1)]$Consume_1, ConsumerData[, .(Consume_2)]$Consume_2),
+  Freq_Pang = c(ConsumerData[, .(Freq_Pang_1)]$Freq_Pang_1, ConsumerData[, .(Freq_Pang_2)]$Freq_Pang_2),
+  Freq_Tila = c(ConsumerData[, .(Freq_Tila_1)]$Freq_Tila_1, ConsumerData[, .(Freq_Tila_2)]$Freq_Tila_2),
+  Freq_Carp = c(ConsumerData[, .(Freq_Carp_1)]$Freq_Carp_1, ConsumerData[, .(Freq_Carp_2)]$Freq_Carp_2),
+  Freq_OtherCat = c(ConsumerData[, .(Freq_OtherCat_1)]$Freq_OtherCat_1, ConsumerData[, .(Freq_OtherCat_2)]$Freq_OtherCat_2)
+))
+
+# Remove those that did not buy a species pre and post covid
+Ind_NonPang <- c(ConsumerData[, .I[Freq_Pang_1 == "Never" & Freq_Pang_2 == "Never"]],
+                 ConsumerData[, .I[Freq_Pang_1 == "Never" & Freq_Pang_2 == "Never"]] + 120)
+LikertData$Freq_Pang[Ind_NonPang] <- NA
+Ind_NonTila <- c(ConsumerData[, .I[Freq_Tila_1 == "Never" & Freq_Tila_2 == "Never"]],
+                 ConsumerData[, .I[Freq_Tila_1 == "Never" & Freq_Tila_2 == "Never"]] + 120)
+LikertData$Freq_Tila[Ind_NonTila] <- NA
+Ind_NonCarp <- c(ConsumerData[, .I[Freq_Carp_1 == "Never" & Freq_Carp_2 == "Never"]],
+                 ConsumerData[, .I[Freq_Carp_1 == "Never" & Freq_Carp_2 == "Never"]] + 120)
+LikertData$Freq_Carp[Ind_NonCarp] <- NA
+Ind_NonOtherCat <- c(ConsumerData[, .I[Freq_OtherCat_1 == "Never" & Freq_OtherCat_2 == "Never"]],
+                 ConsumerData[, .I[Freq_OtherCat_1 == "Never" & Freq_OtherCat_2 == "Never"]] + 120)
+LikertData$Freq_OtherCat[Ind_NonOtherCat] <- NA
+
+
+
+LikertData$Amount = factor(LikertData$Amount,
+                           levels = c("1", "2", "3", "4", "5"),
+                           labels = c("< 2 kg/week", "2-5 kg/week", "5-7 kg/week", "7-10 kg/week", "> 10 kg/week"),
+                           ordered = TRUE)
+LikertData$FreqC = factor(LikertData$FreqC,
+                          levels = c("1", "2", "3", "4", "5"),
+                          labels = c("Everyday", "On average 2-3 times a week","Once every week","Once a month", "Never"),
+                                ordered = TRUE)
+LikertData$Freq_Pang = factor(LikertData$Freq_Pang,
+                          levels = c("1", "2", "3", "4"),
+                          labels = c("Regularly", "Occasionally","Rarely","Never"),
+                                ordered = TRUE)
+LikertData$Freq_Tila = factor(LikertData$Freq_Tila,
+                          levels = c("1", "2", "3", "4"),
+                          labels = c("Regularly", "Occasionally","Rarely","Never"),
+                                ordered = TRUE)
+LikertData$Freq_Carp = factor(LikertData$Freq_Carp,
+                          levels = c("1", "2", "3", "4"),
+                          labels = c("Regularly", "Occasionally","Rarely","Never"),
+                                ordered = TRUE)
+LikertData$Freq_OtherCat = factor(LikertData$Freq_OtherCat,
+                          levels = c("1", "2", "3", "4"),
+                          labels = c("Regularly", "Occasionally","Rarely","Never"),
+                                ordered = TRUE)
+names(LikertData) <- c("COVID", "(b) What is the amount of fish you buy each week (kg)", "(a) How many times per week do you eat fish?",
+                       "(c) How often do you buy Pangasius?",
+                       "(d) How often do you buy Tilapia?",
+                       "(e) How often do you buy Carp?",
+                       "(f) How often do you buy Other Catfish?")
+
+FishWeeklyConsumption = likert(LikertData[, 3, drop = FALSE], grouping = LikertData$COVID)
+FreqPlot <- plot(FishWeeklyConsumption,
+                   col=c("#cccccc", "#bdbdbd", "#969696", "#636363","#252525"))
+FreqPlot
+FishAmountWeekly = likert(LikertData[,2, drop = FALSE], grouping = LikertData$COVID)
+AmountPlot <- plot(FishAmountWeekly,
+                   col=c("#cccccc", "#bdbdbd", "#969696", "#636363","#252525"))
+AmountPlot
+FishTypePurchaseFreq = likert(LikertData[, 4:7], grouping = LikertData$COVID)
+FreqFishTypePlot <- plot(FishTypePurchaseFreq,
+                         col=c("#d9d9d9", "#969696", "#636363", "#252525"))
+FreqFishTypePlot
+
+# Work out whether the consumer has changed buying pattern for each species
+ConsumerData[, Pang_Change := as.numeric(Freq_Pang_2) - as.numeric(Freq_Pang_1)]
+ConsumerData[Pang_Change != 0, Pang_Change := Pang_Change/abs(Pang_Change)]
+ConsumerData[, Tila_Change := as.numeric(Freq_Tila_2) - as.numeric(Freq_Tila_1)]
+ConsumerData[Tila_Change != 0, Tila_Change := Tila_Change/abs(Tila_Change)]
+ConsumerData[, Carp_Change := as.numeric(Freq_Carp_2) - as.numeric(Freq_Carp_1)]
+ConsumerData[Carp_Change != 0, Carp_Change := Carp_Change/abs(Carp_Change)]
+ConsumerData[, OtherCat_Change := as.numeric(Freq_OtherCat_2) - as.numeric(Freq_OtherCat_1)]
+ConsumerData[OtherCat_Change != 0, OtherCat_Change := OtherCat_Change/abs(OtherCat_Change)]
+
+# For never purchasing for both pre and post covid set to NA
+ConsumerData[Freq_Pang_1 == "Never" & Freq_Pang_2 == "Never", Pang_Change := NA]
+ConsumerData[Freq_Tila_1 == "Never" & Freq_Tila_2 == "Never", Tila_Change := NA]
+ConsumerData[Freq_Carp_1 == "Never" & Freq_Carp_2 == "Never", Carp_Change := NA]
+ConsumerData[Freq_OtherCat_1 == "Never" & Freq_OtherCat_2 == "Never", OtherCat_Change := NA]
+
+# Set up groups and plot together
+groups <- list(
+  "Consumption Frequency" = c("(a) How many times per week do you eat fish?"),
+  "Consumption Amount" = c("(b) What is the amount of fish you buy each week (kg)"),
+  "Species Preference" = c("(c) How often do you buy Pangasius?",
+                       "(d) How often do you buy Tilapia?",
+                       "(e) How often do you buy Carp?",
+                       "(f) How often do you buy Other Catfish?")
+)
+
+library(gridExtra)
+TotalPlot <- grid.arrange(FreqPlot, AmountPlot, FreqFishTypePlot, nrow = 3,
+                          heights=c(0.25,0.25,0.5))
+# Use commmand line for now
+ggsave(file="CombinedLikertPlot.png", TotalPlot)
+```
+
+## Change in the main protein source
+
+Pre COVID the main protein sources were:
+
+Fish: **`r ConsumerData[Protein_Main_1 == "Fish",.N]`** or **`r ConsumerData[Protein_Main_1 == "Fish",.N]/NumberResponses * 100`**   
+Chicken: **`r ConsumerData[Protein_Main_1 == "Chicken",.N]`** or **`r ConsumerData[Protein_Main_1 == "Chicken",.N]/NumberResponses * 100`**   
+Egg: **`r ConsumerData[Protein_Main_1 == "Egg",.N]`** or **`r ConsumerData[Protein_Main_1 == "Egg",.N]/NumberResponses * 100`**     
+Beef: **`r ConsumerData[Protein_Main_1 == "Beef",.N]`** or **`r ConsumerData[Protein_Main_1 == "Beef",.N]/NumberResponses * 100`**   
+
+Post COVID the main protein sources were:
+
+Fish: **`r ConsumerData[Protein_Main_2 == "Fish",.N]`** or **`r ConsumerData[Protein_Main_2 == "Fish",.N]/NumberResponses * 100`**   
+Chicken: **`r ConsumerData[Protein_Main_2 == "Chicken",.N]`** or **`r ConsumerData[Protein_Main_2 == "Chicken",.N]/NumberResponses * 100`**   
+Egg: **`r ConsumerData[Protein_Main_2 == "Egg",.N]`** or **`r ConsumerData[Protein_Main_2 == "Egg",.N]/NumberResponses * 100`**     
+Beef: **`r ConsumerData[Protein_Main_2 == "Beef",.N]`** or **`r ConsumerData[Protein_Main_2 == "Beef",.N]/NumberResponses * 100`**   
+
+For those changing the main source they changed to:
+
+Fish: **`r ConsumerData[Protein_Main_1 != Protein_Main_2 & Protein_Main_2 == "Fish", .N]`**  
+Chicken: **`r ConsumerData[Protein_Main_1 != Protein_Main_2 & Protein_Main_2 == "Chicken", .N]`**  
+Egg: **`r ConsumerData[Protein_Main_1 != Protein_Main_2 & Protein_Main_2 == "Egg", .N]`**  
+Beef: **`r ConsumerData[Protein_Main_1 != Protein_Main_2 & Protein_Main_2 == "Beef", .N]`**  
+
+For those changing from fish, they changed to:
+Chicken: **`r ConsumerData[Protein_Main_1 != Protein_Main_2 & Protein_Main_1 == "Fish" & Protein_Main_2 == "Chicken", .N]`**  
+Egg: **`r ConsumerData[Protein_Main_1 != Protein_Main_2 & Protein_Main_1 == "Fish" & Protein_Main_2 == "Egg", .N]`**  
+Beef: **`r ConsumerData[Protein_Main_1 != Protein_Main_2 & Protein_Main_1 == "Fish" & Protein_Main_2 == "Beef", .N]`** 
+
+For those changing to fish, they changed from:
+Chicken: **`r ConsumerData[Protein_Main_1 != Protein_Main_2 & Protein_Main_2 == "Fish" & Protein_Main_1 == "Chicken", .N]`**  
+Egg: **`r ConsumerData[Protein_Main_1 != Protein_Main_2 & Protein_Main_2 == "Fish" & Protein_Main_1 == "Egg", .N]`**  
+Beef: **`r ConsumerData[Protein_Main_1 != Protein_Main_2 & Protein_Main_2 == "Fish" & Protein_Main_1 == "Beef", .N]`** 
+
+## Change in purchasing of fish
+
+For each category the amount of fish purchased was:
+
+PRECOVID19
+
+1. Less than 2kg: **`r ConsumerData[Amount_1 == "< 2 kg/week", .N]`** or **`r round(ConsumerData[Amount_1 == "< 2 kg/week", .N]/NumberResponses * 100, digits = 2)`%**    
+2. 2-5kg: **`r ConsumerData[Amount_1 == "2-5 kg/week", .N]`** or **`r round(ConsumerData[Amount_1 == "2-5 kg/week", .N]/NumberResponses * 100, digits = 2)`%**    
+3. 5-7kg: **`r ConsumerData[Amount_1 == "5-7 kg/week", .N]`** or **`r round(ConsumerData[Amount_1 == "5-7 kg/week", .N]/NumberResponses * 100, digits = 2)`%**    
+4. 7-10kg: **`r ConsumerData[Amount_1 == "7-10 kg/week", .N]`** or **`r round(ConsumerData[Amount_1 == "7-10 kg/week", .N]/NumberResponses * 100, digits = 2)`%**    
+5. More than 10kg: **`r ConsumerData[Amount_1 == "> 10 kg/week", .N]`** or **`r round(ConsumerData[Amount_1 == "> 10 kg/week", .N]/NumberResponses * 100, digits = 2)`%**    
+
+POSTCOVID19
+
+1. Less than 2kg: **`r ConsumerData[Amount_2 == "< 2 kg/week", .N]`** or **`r round(ConsumerData[Amount_2 == "< 2 kg/week", .N]/NumberResponses * 100, digits = 2)`%**    
+2. 2-5kg: **`r ConsumerData[Amount_2 == "2-5 kg/week", .N]`** or **`r round(ConsumerData[Amount_2 == "2-5 kg/week", .N]/NumberResponses * 100, digits = 2)`%**    
+3. 5-7kg: **`r ConsumerData[Amount_2 == "5-7 kg/week", .N]`** or **`r round(ConsumerData[Amount_2 == "5-7 kg/week", .N]/NumberResponses * 100, digits = 2)`%**    
+4. 7-10kg: **`r ConsumerData[Amount_2 == "7-10 kg/week", .N]`** or **`r round(ConsumerData[Amount_2 == "7-10 kg/week", .N]/NumberResponses * 100, digits = 2)`%**    
+5. More than 10kg: **`r ConsumerData[Amount_2 == "> 10 kg/week", .N]`** or **`r round(ConsumerData[Amount_2 == "> 10 kg/week", .N]/NumberResponses * 100, digits = 2)`%**    
+
+Using the precovid data as expected probabilities then comparing the frequency of post-covid responses by chi-squared test:
+
+The chi=squared value is: **`r Amount_Chi$statistic`**  
+The p-value is:  **`r Amount_Chi$p.value`**  
+The residuals are:  **`r Amount_Chi$residuals`**  
+
+Using the data we can extract the number that increased purchasing, those that decreased purchasing and those that stayed the same.
+
+Increased amount purchased = **`r ConsumerData[as.numeric(Amount_2) > as.numeric(Amount_1), .N]`**  
+Decreased amount purchased = **`r ConsumerData[as.numeric(Amount_2) < as.numeric(Amount_1), .N]`**  
+No change = **`r ConsumerData[as.numeric(Amount_2) == as.numeric(Amount_1), .N]`**  
+
+### Consumption weekly
+
+PRECOVID19
+
+1. Everyday: **`r ConsumerData[Consume_1 == "Everyday", .N]`** or **`r round(ConsumerData[Consume_1 == "Everyday", .N]/NumberResponses * 100, digits = 2)`%**    
+2. On average 2-3 times a week: **`r ConsumerData[Consume_1 == "On average 2-3 times a week", .N]`** or **`r round(ConsumerData[Consume_1 == "On average 2-3 times a week", .N]/NumberResponses * 100, digits = 2)`%**    
+3. Once every week: **`r ConsumerData[Consume_1 == "Once every week", .N]`** or **`r round(ConsumerData[Consume_1 == "Once every week", .N]/NumberResponses * 100, digits = 2)`%**    
+4. Once a month: **`r ConsumerData[Consume_1 == "Once a month", .N]`** or **`r round(ConsumerData[Consume_1 == "Once a month", .N]/NumberResponses * 100, digits = 2)`%**    
+5. Never: **`r ConsumerData[Consume_1 == "Never", .N]`** or **`r round(ConsumerData[Consume_1 == "Never", .N]/NumberResponses * 100, digits = 2)`%**    
+
+POST_COVID
+
+1. Everyday: **`r ConsumerData[Consume_2 == "Everyday", .N]`** or **`r round(ConsumerData[Consume_2 == "Everyday", .N]/NumberResponses * 100, digits = 2)`%**    
+2. On average 2-3 times a week: **`r ConsumerData[Consume_2 == "On average 2-3 times a week", .N]`** or **`r round(ConsumerData[Consume_2 == "On average 2-3 times a week", .N]/NumberResponses * 100, digits = 2)`%**    
+3. Once every week: **`r ConsumerData[Consume_2 == "Once every week", .N]`** or **`r round(ConsumerData[Consume_2 == "Once every week", .N]/NumberResponses * 100, digits = 2)`%**    
+4. Once a month: **`r ConsumerData[Consume_2 == "Once a month", .N]`** or **`r round(ConsumerData[Consume_2 == "Once a month", .N]/NumberResponses * 100, digits = 2)`%**    
+5. Never: **`r ConsumerData[Consume_2 == "Never", .N]`** or **`r round(ConsumerData[Consume_2 == "Never", .N]/NumberResponses * 100, digits = 2)`%** 
+
+### Purchase of different species
+
+From the survey data the number of respondents that changed their purchasing of fish was:
+
+### Overall
+
+Total number of responses in all categories (those that bought fish): **`r ConsumerData[!is.na(Pang_Change), .N] + ConsumerData[!is.na(Tila_Change), .N] + ConsumerData[!is.na(Carp_Change), .N] + ConsumerData[!is.na(OtherCat_Change), .N]`**  
+Total number that did not change buying hapbits: **`r ConsumerData[Pang_Change == 0, .N] + ConsumerData[Tila_Change == 0, .N] + ConsumerData[Carp_Change == 0, .N] + ConsumerData[OtherCat_Change == 0, .N]`**  
+
+### Pangasius
+
+Number that have bought: **`r ConsumerData[!is.na(Pang_Change), .N]`**  
+Number that bought pre-COVID: **`r ConsumerData[Freq_Pang_1 != "Never", .N]`**  
+Number that bought post-COVID: **`r ConsumerData[Freq_Pang_2 != "Never", .N]`**  
+Never buy: **`r ConsumerData[is.na(Pang_Change), .N]`**  
+No change in buying: **`r ConsumerData[Pang_Change == 0, .N]`**  
+Increased post-covid: **`r ConsumerData[Pang_Change == 1, .N]`**  
+Decreased post-covid: **`r ConsumerData[Pang_Change == -1, .N]`**  
+  
+### Tilapia
+
+Number that have bought: **`r ConsumerData[!is.na(Tila_Change), .N]`**  
+Number that bought pre-COVID: **`r ConsumerData[Freq_Tila_1 != "Never", .N]`**  
+Number that bought post-COVID: **`r ConsumerData[Freq_Tila_2 != "Never", .N]`**  
+Never buy: **`r ConsumerData[is.na(Tila_Change), .N]`**  
+No change in buying: **`r ConsumerData[Tila_Change == 0, .N]`**  
+Increased post-covid: **`r ConsumerData[Tila_Change == 1, .N]`**  
+Decreased post-covid: **`r ConsumerData[Tila_Change == -1, .N]`**  
+  
+### Carp
+
+Number that have bought: **`r ConsumerData[!is.na(Carp_Change), .N]`**  
+Number that bought pre-COVID: **`r ConsumerData[Freq_Carp_1 != "Never", .N]`**  
+Number that bought post-COVID: **`r ConsumerData[Freq_Carp_2 != "Never", .N]`**  
+Never buy: **`r ConsumerData[is.na(Carp_Change), .N]`**  
+No change in buying: **`r ConsumerData[Carp_Change == 0, .N]`**  
+Increased post-covid: **`r ConsumerData[Carp_Change == 1, .N]`**  
+Decreased post-covid: **`r ConsumerData[Carp_Change == -1, .N]`**  
+  
+### Other Catfish
+
+Number that have bought: **`r ConsumerData[!is.na(OtherCat_Change), .N]`**  
+Number that bought pre-COVID: **`r ConsumerData[Freq_OtherCat_1 != "Never", .N]`**  
+Number that bought post-COVID: **`r ConsumerData[Freq_OtherCat_2 != "Never", .N]`**  
+Never buy: **`r ConsumerData[is.na(OtherCat_Change), .N]`**  
+No change in buying: **`r ConsumerData[OtherCat_Change == 0, .N]`**  
+Increased post-covid: **`r ConsumerData[OtherCat_Change == 1, .N]`**  
+Decreased post-covid: **`r ConsumerData[OtherCat_Change == -1, .N]`** 
+ 
+```{r Stats on the change of frequency finfish by type, include = FALSE} 
+# Here we ignore the consumers that did not change their frequency
+Pang_B_Test <- binom.test(c(ConsumerData[Pang_Change == 1, .N], ConsumerData[Pang_Change == -1, .N]),
+                          ConsumerData[Pang_Change == 1 | Pang_Change == -1, .N],
+                          p = 0.5,
+                          alternative = "two.sided")
+Tila_B_Test <- binom.test(c(ConsumerData[Tila_Change == 1, .N], ConsumerData[Tila_Change == -1, .N]),
+                          ConsumerData[Tila_Change == 1 | Tila_Change == -1, .N],
+                          p = 0.5,
+                          alternative = "two.sided")
+Carp_B_Test <- binom.test(c(ConsumerData[Carp_Change == 1, .N], ConsumerData[Carp_Change == -1, .N]),
+                          ConsumerData[Carp_Change == 1 | Carp_Change == -1, .N],
+                          p = 0.5,
+                          alternative = "two.sided")
+OtherCat_B_Test <- binom.test(c(ConsumerData[OtherCat_Change == 1, .N], ConsumerData[OtherCat_Change == -1, .N]),
+                          ConsumerData[OtherCat_Change == 1 | OtherCat_Change == -1, .N],
+                          p = 0.5,
+                          alternative = "two.sided")
+
+```
+
+## Statistical analysis of changes in the frequency of species
+
+To understand if the differences seen were significant a binomial test was performed. Basically, those respondents that did not change their frequency were discounted and for the remaining the null hypothesis was that there was an equal probability that the respondent increased or decreased the frequency with which they purchased that type of fish.  An exact binomial test was performed using an increase in frequency as a successful outcome.
+
+For Pangasius the change in the purchasing between pre and post covid:
+
+Test Statistic p-value: **`r Pang_B_Test$p.value`**  
+Estimated p of succcess: **`r Pang_B_Test$estimate`**  
+95% confidence limits: **`r Pang_B_Test$conf.int[1]`** to **`r Pang_B_Test$conf.int[2]`**  
+
+This suggests a significant decrease in purchase frequency of pangasius
+
+For Tilapia the change in the purchasing between pre and post covid:
+
+Test Statistic p-value: **`r Tila_B_Test$p.value`**  
+Estimated p of succcess: **`r Tila_B_Test$estimate`**  
+95% confidence limits: **`r Tila_B_Test$conf.int[1]`** to **`r Tila_B_Test$conf.int[2]`**  
+
+This suggests no significant change in the purchasing frequency of tilapia
+
+For carp the change in the purchasing between pre and post covid:
+
+Test Statistic p-value: **`r Carp_B_Test$p.value`**  
+Estimated p of succcess: **`r Carp_B_Test$estimate`**  
+95% confidence limits: **`r Carp_B_Test$conf.int[1]`** to **`r Carp_B_Test$conf.int[2]`**  
+
+This suggests a significant increase in the purchasing frequency of carp
+
+For other catfish the change in the purchasing between pre and post covid:
+
+Test Statistic p-value: **`r OtherCat_B_Test$p.value`**  
+Estimated p of succcess: **`r OtherCat_B_Test$estimate`**  
+95% confidence limits: **`r OtherCat_B_Test$conf.int[1]`** to **`r OtherCat_B_Test$conf.int[2]`**  
+
+This suggests no significant change in the purchase frequency of other catfish
+
+
+```{r Reasons for changing species, include=FALSE}
+###########################################################
+# Reasons for changing species
+###########################################################
+# Need to strip out the reasons
+ConsumerData[, SpecChg_1 := grepl("I have not changed the species of fish I buy", Reason_2)]
+ConsumerData[, SpecChg_2 := grepl("I have changed the species because they are more available", Reason_2)]
+ConsumerData[, SpecChg_3 := grepl("I have changed the species because they are cheaper", Reason_2)]
+ConsumerData[, SpecChg_4 := grepl("I have changed the species because they are more nutritious", Reason_2)]
+ConsumerData[, SpecChg_5 := grepl("I have changed the species because they are easier to prepare", Reason_2)]
+ConsumerData[, SpecChg_6 := grepl("I have changed the species because they are better for the immune system", Reason_2)]
+ConsumerData[, SpecChg_7 := grepl("Other", Reason_2)]
+
+
+# Plot as a horizontal bar chart
+library(plotly)
+y <- c("I have not changed the species of fish I buy",
+       "I have changed the species because they are more available",
+       "I have changed the species because they are cheaper",
+       "I have changed the species because they are more nutritious",
+       "I have changed the species because they are easier to prepare",
+       "I have changed the species because they are better for the immune system",
+       "Other")
+x <- c(-sum(ConsumerData$SpecChg_1)/NumberResponses * 100,
+       sum(ConsumerData$SpecChg_2)/NumberResponses * 100,
+       sum(ConsumerData$SpecChg_3)/NumberResponses * 100,
+       sum(ConsumerData$SpecChg_4)/NumberResponses * 100,
+       sum(ConsumerData$SpecChg_5)/NumberResponses * 100,
+       sum(ConsumerData$SpecChg_6)/NumberResponses * 100,
+       sum(ConsumerData$SpecChg_7)/NumberResponses * 100)
+
+SpecChangeReasonDF <- data.frame(y,x)
+
+SpecChangeReason_Plot <- plot_ly(SpecChangeReasonDF, x = ~x, y = ~y, type = 'bar', orientation = 'h', name = 'Reasons',
+        marker = list(color = c('rgba(0, 0, 0, 0.8)',
+                                'rgba(120, 120, 120, 0.8)',
+                                'rgba(120, 120, 120, 0.8)',
+                                'rgba(120, 120, 120, 0.8)',
+                                'rgba(120, 120, 120, 0.8)',
+                                'rgba(120, 120, 120, 0.8)',
+                                'rgba(120, 120, 120, 0.8)'),
+                      line = list(color = 'rgba(0, 0, 0, 1.0)',
+                                  width = 1))) %>% 
+        layout(barmode = 'stack',
+            xaxis = list(title = list(text = "Percentage of Respondents", 
+                                      font = list(size = 14, family = 'Arial')),
+                         range = c(-50,50),
+                         tick0 = -50,
+                         dtick = 10,
+                         nticks = 11,
+                         showgrid = TRUE),
+            yaxis = list(title ="",
+                         categoryorder = 'array',
+                         categoryarray = y,
+                         autorange = 'reversed'
+                         ))
+######################################
+# Looking at each reason in turn
+# Look at species increase/decrease
+######################################
+
+# Changed species as they are more available
+AvailR_Number <- ConsumerData[SpecChg_2 == TRUE, .N]
+AvailR_Increase <- c(ConsumerData[SpecChg_2 == TRUE & Pang_Change == 1, .N],
+            ConsumerData[SpecChg_2 == TRUE & Tila_Change == 1, .N],
+            ConsumerData[SpecChg_2 == TRUE & Carp_Change == 1, .N],
+            ConsumerData[SpecChg_2 == TRUE & OtherCat_Change == 1, .N])
+AvailR_Decrease <- c(ConsumerData[SpecChg_2 == TRUE & Pang_Change == -1, .N],
+            ConsumerData[SpecChg_2 == TRUE & Tila_Change == -1, .N],
+            ConsumerData[SpecChg_2 == TRUE & Carp_Change == -1, .N],
+            ConsumerData[SpecChg_2 == TRUE & OtherCat_Change == -1, .N])
+
+# Work out each as a percentage of total responses
+AvailR_Increase <- AvailR_Increase/(sum(AvailR_Increase, AvailR_Decrease)) * 100
+AvailR_Decrease <- AvailR_Decrease/(sum(AvailR_Increase, AvailR_Decrease)) * 100
+
+# Changed species as they are cheaper
+CheapR_Increase <- c(ConsumerData[SpecChg_3 == TRUE & Pang_Change == 1, .N],
+            ConsumerData[SpecChg_3 == TRUE & Tila_Change == 1, .N],
+            ConsumerData[SpecChg_3 == TRUE & Carp_Change == 1, .N],
+            ConsumerData[SpecChg_3 == TRUE & OtherCat_Change == 1, .N])
+CheapR_Decrease <- c(ConsumerData[SpecChg_3 == TRUE & Pang_Change == -1, .N],
+            ConsumerData[SpecChg_3 == TRUE & Tila_Change == -1, .N],
+            ConsumerData[SpecChg_3 == TRUE & Carp_Change == -1, .N],
+            ConsumerData[SpecChg_3 == TRUE & OtherCat_Change == -1, .N])
+# Work out each as a percentage of total responses
+CheapR_Increase <- CheapR_Increase/(sum(CheapR_Increase, CheapR_Decrease)) * 100
+CheapR_Decrease <- CheapR_Decrease/(sum(CheapR_Increase, CheapR_Decrease)) * 100
+
+# Changed species as they are nutritious
+NutrientR_Increase <- c(ConsumerData[SpecChg_4 == TRUE & Pang_Change == 1, .N],
+            ConsumerData[SpecChg_4 == TRUE & Tila_Change == 1, .N],
+            ConsumerData[SpecChg_4 == TRUE & Carp_Change == 1, .N],
+            ConsumerData[SpecChg_4 == TRUE & OtherCat_Change == 1, .N])
+NutrientR_Decrease <- c(ConsumerData[SpecChg_4 == TRUE & Pang_Change == -1, .N],
+            ConsumerData[SpecChg_4 == TRUE & Tila_Change == -1, .N],
+            ConsumerData[SpecChg_4 == TRUE & Carp_Change == -1, .N],
+            ConsumerData[SpecChg_4 == TRUE & OtherCat_Change == -1, .N])
+# Work out each as a percentage of total responses
+NutrientR_Increase <- NutrientR_Increase/(sum(NutrientR_Increase, NutrientR_Decrease)) * 100
+NutrientR_Decrease <- NutrientR_Decrease/(sum(NutrientR_Increase, NutrientR_Decrease)) * 100
+
+# Changed species as they are easier to prepare
+PrepareR_Increase <- c(ConsumerData[SpecChg_5 == TRUE & Pang_Change == 1, .N],
+            ConsumerData[SpecChg_5 == TRUE & Tila_Change == 1, .N],
+            ConsumerData[SpecChg_5 == TRUE & Carp_Change == 1, .N],
+            ConsumerData[SpecChg_5 == TRUE & OtherCat_Change == 1, .N])
+PrepareR_Decrease <- c(ConsumerData[SpecChg_5 == TRUE & Pang_Change == -1, .N],
+            ConsumerData[SpecChg_5 == TRUE & Tila_Change == -1, .N],
+            ConsumerData[SpecChg_5 == TRUE & Carp_Change == -1, .N],
+            ConsumerData[SpecChg_5 == TRUE & OtherCat_Change == -1, .N])
+
+# Changed species as they are immune system
+ImmuneR_Increase <- c(ConsumerData[SpecChg_6 == TRUE & Pang_Change == 1, .N],
+            ConsumerData[SpecChg_6 == TRUE & Tila_Change == 1, .N],
+            ConsumerData[SpecChg_6 == TRUE & Carp_Change == 1, .N],
+            ConsumerData[SpecChg_6 == TRUE & OtherCat_Change == 1, .N])
+ImmuneR_Decrease <- c(ConsumerData[SpecChg_6 == TRUE & Pang_Change == -1, .N],
+            ConsumerData[SpecChg_6 == TRUE & Tila_Change == -1, .N],
+            ConsumerData[SpecChg_6 == TRUE & Carp_Change == -1, .N],
+            ConsumerData[SpecChg_6 == TRUE & OtherCat_Change == -1, .N])
+# Work out each as a percentage of total responses
+ImmuneR_Increase <- ImmuneR_Increase/(sum(ImmuneR_Increase, ImmuneR_Decrease)) * 100
+ImmuneR_Decrease <- ImmuneR_Decrease/(sum(ImmuneR_Increase, ImmuneR_Decrease)) * 100
+
+# create a bar chart
+SpecChangeByTypeDF <- data.frame(
+  Reason = y[6:2],
+  Pang_Increase = c(AvailR_Increase[1], CheapR_Increase[1], NutrientR_Increase[1], PrepareR_Increase[1], ImmuneR_Increase[1]),
+  Pang_Decrease = c(AvailR_Decrease[1], CheapR_Decrease[1], NutrientR_Decrease[1], PrepareR_Decrease[1], ImmuneR_Decrease[1])*-1,
+  Tila_Increase = c(AvailR_Increase[2], CheapR_Increase[2], NutrientR_Increase[2], PrepareR_Increase[2], ImmuneR_Increase[2]),
+  Tila_Decrease = c(AvailR_Decrease[2], CheapR_Decrease[2], NutrientR_Decrease[2], PrepareR_Decrease[2], ImmuneR_Decrease[2])*-1,
+  Carp_Increase = c(AvailR_Increase[3], CheapR_Increase[3], NutrientR_Increase[3], PrepareR_Increase[3], ImmuneR_Increase[3]),
+  Carp_Decrease = c(AvailR_Decrease[3], CheapR_Decrease[3], NutrientR_Decrease[3], PrepareR_Decrease[3], ImmuneR_Decrease[3])*-1,
+  OtherCat_Increase = c(AvailR_Increase[4], CheapR_Increase[4], NutrientR_Increase[4], PrepareR_Increase[4], ImmuneR_Increase[4]),
+  OtherCat_Decrease = c(AvailR_Decrease[4], CheapR_Decrease[4], NutrientR_Decrease[4], PrepareR_Decrease[4], ImmuneR_Decrease[4])*-1,
+  Pang_I = c(4,9,14,19,24),
+  Tila_I = c(3,8,13,18,23),
+  Carp_I = c(2,7,12,17,22),
+  OtherCat_I = c(1,6,11,16,21)
+)
+
+# SpecChangeByTypeDF2 <- data.frame(
+#   Reason = y[2:6],
+#   Avail_I = AvailR_Increase,
+#   Avail_D = AvailR_Increase,
+#   Cheap_I = CheapR_Increase,
+#   Cheap_D = CheapR_Decrease,
+#   Nutri_I = NutrientR_Increase,
+#   Nutri_D = NutrientR_Decrease,
+#   Prep_I = PrepareR_Increase,
+#   Prep_D = PrepareR_Decrease
+# )
+
+BarWidth = 0.8
+SpecChangeByType_Plot <- plot_ly(SpecChangeByTypeDF, type = 'bar', orientation = 'h') %>%
+  add_trace(name = 'Pangasius',
+            x = ~Pang_Increase,
+            y = ~Pang_I,
+            base = 0,
+            width = BarWidth,
+            marker = list(color = c('rgba(20, 20, 20, 0.8)'),
+                      line = list(color = 'rgba(0, 0, 0, 1.0)',
+                                  width = 1))) %>% 
+  add_trace(name = 'Pangasius',
+            x = ~Pang_Decrease,
+            y = ~Pang_I,
+            base = 0,
+            width = BarWidth,
+            showlegend = FALSE,
+            marker = list(color = c('rgba(0, 0, 0, 0.8)'),
+                      line = list(color = 'rgba(0, 0, 0, 1.0)',
+                                  width = 1))) %>% 
+  add_trace(name = 'Tilapia',
+            x = ~Tila_Increase,
+            y = ~Tila_I,
+            base = 0,
+            width = BarWidth,
+            marker = list(color = c('rgba(100, 100, 100, 0.8)'),
+                      line = list(color = 'rgba(0, 0, 0, 1.0)',
+                                  width = 1))) %>% 
+  add_trace(name = 'Tilapia',
+            x = ~Tila_Decrease,
+            y = ~Tila_I,
+            base = 0,
+            width = BarWidth,
+            showlegend = FALSE,
+            marker = list(color = c('rgba(80, 80, 80, 0.8)'),
+                      line = list(color = 'rgba(0, 0, 0, 1.0)',
+                                  width = 1))) %>%
+  add_trace(name = 'Carp',
+            x = ~Carp_Increase,
+            y = ~Carp_I,
+            base = 0,
+            width = BarWidth,
+            marker = list(color = c('rgba(180, 180, 180, 0.8)'),
+                      line = list(color = 'rgba(0, 0, 0, 1.0)',
+                                  width = 1))) %>% 
+  add_trace(name = 'Carp',
+            x = ~Carp_Decrease,
+            y = ~Carp_I,
+            base = 0,
+            width = BarWidth,
+            showlegend = FALSE,
+            marker = list(color = c('rgba(160, 160, 160, 0.8)'),
+                      line = list(color = 'rgba(0, 0, 0, 1.0)',
+                                  width = 1))) %>%
+  add_trace(name = 'Other Catfish',
+            x = ~OtherCat_Increase,
+            y = ~OtherCat_I,
+            base = 0,
+            width = BarWidth,
+            marker = list(color = c('rgba(250, 250, 250, 0.8)'),
+                      line = list(color = 'rgba(0, 0, 0, 1.0)',
+                                  width = 1))) %>% 
+  add_trace(name = 'Other Catfish',
+            x = ~OtherCat_Decrease,
+            y = ~OtherCat_I,
+            base = 0,
+            width = BarWidth,
+            showlegend = FALSE,
+            marker = list(color = c('rgba(230, 230, 230, 0.8)'),
+                      line = list(color = 'rgba(0, 0, 0, 1.0)',
+                                  width = 1))) %>%
+  layout(barmode = 'stack', bargap = 0.6,
+         shapes = list(
+           list(type = 'line', layer = 'bottom', 
+                  y0 = 0, y1 = 0,
+                  x0 = -50, x1 = 50,
+                  line = list(color = 'rgb(200,200,200)', dash = 'dot', width = 0.5)),
+           list(type = 'line', layer = 'bottom', 
+                  y0 = 5, y1 = 5,
+                  x0 = -50, x1 = 50,
+                  line = list(color = 'rgb(200,200,200)', dash = 'dot', width = 0.5)),
+           list(type = 'line', layer = 'bottom', 
+                  y0 = 10, y1 = 10,
+                  x0 = -50, x1 = 50,
+                  line = list(color = 'rgb(200,200,200)', dash = 'dot', width = 0.5)),
+           list(type = 'line', layer = 'bottom', 
+                  y0 = 15, y1 = 15,
+                  x0 = -50, x1 = 50,
+                  line = list(color = 'rgb(200,200,200)', dash = 'dot', width = 0.5)),
+           list(type = 'line', layer = 'bottom', 
+                  y0 = 20, y1 = 20,
+                  x0 = -50, x1 = 50,
+                  line = list(color = 'rgb(200,200,200)', dash = 'dot', width = 0.5)),
+           list(type = 'line', layer = 'bottom', 
+                  y0 = 25, y1 = 25,
+                  x0 = -50, x1 = 50,
+                  line = list(color = 'rgb(200,200,200)', dash = 'dot', width = 0.5))),
+          xaxis = list(title = list(text = "Percentage of Respondents", 
+                                      font = list(size = 14, family = 'Arial')),
+                         range = c(-50,50),
+                         tick0 = -50,
+                         dtick = 10,
+                         nticks = 11,
+                         showgrid = TRUE, zeroline = TRUE),
+            yaxis = list(title ="",
+                         range = c(0,26),
+                         tickmode = 'array',
+                         tickvals = c(2.5, 7.5, 12.5, 17.5, 22.5),
+                         ticktext = ~Reason))
+
+orca(SpecChangeByType_Plot, "ReasonBySpeciesPlot.svg")
+# SpecChangeByType_Plot2 <- plot_ly(SpecChangeByTypeDF2, type = 'bar', orientation = 'h') %>%
+#   add_trace(name = 'Availability',
+#             x = ~Avail_I,
+#             y = ~Reason,
+#             width = BarWidth,
+#             marker = list(color = c('rgba(20, 20, 20, 0.8)'),
+#                       line = list(color = 'rgba(0, 0, 0, 1.0)',
+#                                   width = 1))) %>% 
+#   add_trace(name = 'Availability',
+#             x = ~-Avail_D,
+#             y = ~Reason,
+#             xaxis = 'x2',
+#             width = BarWidth,
+#             showlegend = FALSE,
+#             marker = list(color = c('rgba(0, 0, 0, 0.8)'),
+#                       line = list(color = 'rgba(0, 0, 0, 1.0)',
+#                                   width = 1))) %>% 
+#   add_trace(name = 'Cheap',
+#             x = ~Cheap_I,
+#             y = ~Reason,
+#             width = BarWidth,
+#             marker = list(color = c('rgba(100, 100, 100, 0.8)'),
+#                       line = list(color = 'rgba(0, 0, 0, 1.0)',
+#                                   width = 1))) %>% 
+#   add_trace(name = 'Cheap',
+#             x = ~-Cheap_D,
+#             y = ~Reason,
+#             xaxis = 'x2',
+#             width = BarWidth,
+#             showlegend = FALSE,
+#             marker = list(color = c('rgba(80, 80, 80, 0.8)'),
+#                       line = list(color = 'rgba(0, 0, 0, 1.0)',
+#                                   width = 1))) %>%
+#   layout(barmode = 'group', bargap = 0.6,
+#           xaxis = list(title = list(text = "Percentage of Respondents", 
+#                                       font = list(size = 14, family = 'Arial')),
+#                          range = c(-50,50),
+#                          tick0 = -50,
+#                          dtick = 10,
+#                          nticks = 11,
+#                          showgrid = TRUE),
+#           xaxis2 = list(title = list(text = "Percentage of Respondents", 
+#                                       font = list(size = 14, family = 'Arial')),
+#                          range = c(-50,50),
+#                          tick0 = -50,
+#                          dtick = 10,
+#                          nticks = 11,
+#                          showgrid = TRUE,
+#                         overlaying = 'x'),
+#             yaxis = list(title =""))
+
+```
+
+Plot of the reasons for changing the species purchased and which species was increased or decreased.
+
+`r SpecChangeReason_Plot`
+
+`r SpecChangeByType_Plot`
+
+```{r Carp increase reasons, include=FALSE}
+Observed_Carp_Reasons <- data.frame(
+  Avail = ConsumerData[SpecChg_2 == TRUE & Carp_Change == 1, .N],
+  Cheap = ConsumerData[SpecChg_3 == TRUE & Carp_Change == 1, .N],
+  Nutri = ConsumerData[SpecChg_4 == TRUE & Carp_Change == 1, .N],
+  Prep = ConsumerData[SpecChg_5 == TRUE & Carp_Change == 1, .N],
+  Immune = ConsumerData[SpecChg_6 == TRUE & Carp_Change == 1, .N]
+)
+Prob_Carp_Reasons <- rep(0.2, 5) # Assume early probability
+
+CarpReasonsChiSq <- chisq.test(Observed_Carp_Reasons, p = Prob_Carp_Reasons)
+
+```
+
+## Reasons for increasing carp purchase
+
+For those than increased carp purchases:
+
+I have changed the species because they are more available - **`r ConsumerData[SpecChg_2 == TRUE & Carp_Change == 1, .N]`**  
+I have changed the species because they are cheaper - **`r ConsumerData[SpecChg_3 == TRUE & Carp_Change == 1, .N]`**  
+I have changed the species because they are more nutritious - **`r ConsumerData[SpecChg_4 == TRUE & Carp_Change == 1, .N]`**  
+I have changed the species because they are easier to prepare - **`r ConsumerData[SpecChg_5 == TRUE & Carp_Change == 1, .N]`**  
+I have changed the species because they are better for the immune system - **`r ConsumerData[SpecChg_6 == TRUE & Carp_Change == 1, .N]`**  
+
+Assuming equal chance of each category being selected the chi squared test is:
+
+Chi Squared value of : **`r CarpReasonsChiSq$statistic`**  
+P value of : **`r CarpReasonsChiSq$p.value`**  
+Residuals: = **`r CarpReasonsChiSq$residuals`**  
